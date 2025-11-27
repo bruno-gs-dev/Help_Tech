@@ -529,5 +529,30 @@ document.addEventListener('DOMContentLoaded', () => {
             closeCart();
         }
     });
+
+    // Verificar estado de login na home
+    const user = localStorage.getItem('user');
+    const loginLink = document.getElementById('loginLink');
+    const registerLink = document.getElementById('registerLink');
+
+    if (user && loginLink && registerLink) {
+        // Usuário logado: substituir Login por "Meu Painel" e esconder Registrar
+        loginLink.innerHTML = '👤 Meu Painel';
+        loginLink.href = './dashboard_logged/index.html';
+        registerLink.style.display = 'none';
+
+        // Adicionar botão de sair
+        const logoutLink = document.createElement('a');
+        logoutLink.href = '#';
+        logoutLink.className = 'nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-danger hover:bg-red-50';
+        logoutLink.innerHTML = '🚪 Sair';
+        logoutLink.onclick = (e) => {
+            e.preventDefault();
+            localStorage.removeItem('user');
+            window.location.reload();
+        };
+
+        loginLink.parentNode.appendChild(logoutLink);
+    }
 });
 
