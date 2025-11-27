@@ -25,6 +25,10 @@
         {
             "source": "/dashboard_logged/meu_perfil",
             "destination": "/dashboard_logged/meu_perfil/meu_perfil.html"
+        },
+        {
+            "source": "/api/(.*)",
+            "destination": "/api/$1"
         }
     ]
 }

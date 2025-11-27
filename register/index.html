@@ -16,7 +16,9 @@
     <link href="vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
     <link href="vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
     <!-- Font special for pages-->
-    <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
 
     <!-- Vendor CSS-->
     <link href="vendor/select2/select2.min.css" rel="stylesheet" media="all">
@@ -56,8 +58,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideUp {
@@ -65,6 +72,7 @@
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -225,8 +233,15 @@
         }
 
         @keyframes scaleIn {
-            from { transform: scale(0); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .redirect-spinner {
@@ -240,8 +255,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .input-error {
@@ -276,6 +296,7 @@
                 opacity: 0;
                 transform: translateX(-50%) translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(-50%) translateY(0);
@@ -418,19 +439,21 @@
                 <div class="card-body">
                     <h2 class="title">Cadastro</h2>
                     <div class="alert-box alert-danger" id="mainError"></div>
-                    <form method="POST" action="script_registro.php" id="registerForm">
+                    <form id="registerForm">
                         <div class="row row-space">
                             <div class="col-2">
                                 <div class="input-group">
                                     <label class="label required" for="first_name">Primeiro Nome</label>
-                                    <input class="input--style-4" type="text" name="first_name" id="first_name" placeholder="Digite seu primeiro nome" required>
+                                    <input class="input--style-4" type="text" name="first_name" id="first_name"
+                                        placeholder="Digite seu primeiro nome" required>
                                     <div class="field-error" id="error-first_name"></div>
                                 </div>
                             </div>
                             <div class="col-2">
                                 <div class="input-group">
                                     <label class="label required" for="last_name">Sobrenome</label>
-                                    <input class="input--style-4" type="text" name="last_name" id="last_name" placeholder="Digite seu sobrenome" required>
+                                    <input class="input--style-4" type="text" name="last_name" id="last_name"
+                                        placeholder="Digite seu sobrenome" required>
                                     <div class="field-error" id="error-last_name"></div>
                                 </div>
                             </div>
@@ -440,7 +463,8 @@
                                 <div class="input-group">
                                     <label class="label required" for="birthday">Data de Nascimento</label>
                                     <div class="input-group-icon">
-                                        <input class="input--style-4 js-datepicker" type="text" name="birthday" id="birthday" placeholder="DD/MM/AAAA" required>
+                                        <input class="input--style-4 js-datepicker" type="text" name="birthday"
+                                            id="birthday" placeholder="DD/MM/AAAA" required>
                                         <i class="zmdi zmdi-calendar-note input-icon js-btn-calendar"></i>
                                     </div>
                                     <div class="field-error" id="error-birthday"></div>
@@ -466,29 +490,33 @@
                             <div class="col-2">
                                 <div class="input-group">
                                     <label class="label required" for="email">Email</label>
-                                    <input class="input--style-4" type="email" name="email" id="email" placeholder="seu.email@exemplo.com" required maxlength="50">
+                                    <input class="input--style-4" type="email" name="email" id="email"
+                                        placeholder="seu.email@exemplo.com" required maxlength="50">
                                     <div class="field-error" id="error-email"></div>
                                 </div>
                             </div>
                             <div class="col-2">
                                 <div class="input-group">
                                     <label class="label required" for="phone">Telefone</label>
-                                    <input class="input--style-4" type="text" name="phone" id="phone" placeholder="(00) 00000-0000" required>
+                                    <input class="input--style-4" type="text" name="phone" id="phone"
+                                        placeholder="(00) 00000-0000" required>
                                     <div class="field-error" id="error-phone"></div>
                                 </div>
                             </div>
                         </div>
                         <div class="input-group">
                             <label class="label required" for="password">Senha</label>
-                            <input class="input--style-4" type="password" name="password" id="password" placeholder="Mínimo 6 caracteres" required>
+                            <input class="input--style-4" type="password" name="password" id="password"
+                                placeholder="Mínimo 6 caracteres" required>
                             <div class="field-error" id="error-password"></div>
                         </div>
                         <div class="p-t-15">
-                            <button class="btn btn--radius-2 btn--blue btn-back" type="button" onclick="voltar()">Voltar</button>
+                            <button class="btn btn--radius-2 btn--blue btn-back" type="button"
+                                onclick="voltar()">Voltar</button>
                             <button class="btn btn--radius-2 btn--blue btn-submit enviar" type="submit">Enviar</button>
                             <script>
                                 function voltar() {
-                                    window.location.href = "../login/index.php";
+                                    window.location.href = "../login/index.html";
                                 }
                             </script>
                         </div>
@@ -508,7 +536,8 @@
 
             <div class="modal-body">
                 <p style="color: #666; font-size: 14px; line-height: 1.6;">
-                    Antes de continuar, você precisa aceitar nossos termos e condições. Clique no link abaixo para ler os termos completos:
+                    Antes de continuar, você precisa aceitar nossos termos e condições. Clique no link abaixo para ler
+                    os termos completos:
                 </p>
 
                 <a href="javascript:void(0);" class="terms-link" onclick="abrirTermos()">
@@ -537,7 +566,8 @@
 
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="recusarTermos()">Recusar</button>
-                <button type="button" class="btn-accept" id="acceptBtn" onclick="aceitarTermos()" disabled>Aceitar</button>
+                <button type="button" class="btn-accept" id="acceptBtn" onclick="aceitarTermos()"
+                    disabled>Aceitar</button>
             </div>
         </div>
     </div>
@@ -571,12 +601,12 @@
         let registroData = null;
 
         // Interceptar envio do formulário
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             // Coletar dados do formulário
             registroData = new FormData(this);
-            
+
             // Mostrar modal de termos
             document.getElementById('termsModal').classList.add('show');
         });
@@ -619,54 +649,67 @@
             document.querySelectorAll('.input--style-4').forEach(el => el.classList.remove('input-error'));
             document.getElementById('mainError').style.display = 'none';
 
+            // API Base URL - Detecta automaticamente se está em produção ou desenvolvimento
+            const API_BASE_URL = window.location.hostname === 'localhost'
+                ? 'http://localhost:3000/api'
+                : '/api';
+
+            // Converter FormData para JSON
+            const formDataObj = {};
+            registroData.forEach((value, key) => (formDataObj[key] = value));
+            formDataObj.action = 'register';
+
             // Enviar o formulário via AJAX
-            fetch('script_registro.php', {
+            fetch(`${API_BASE_URL}/auth`, {
                 method: 'POST',
-                body: registroData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formDataObj)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Registro bem-sucedido
-                    fecharModal(); // Fecha o modal de termos
-                    
-                    // Abre o modal de sucesso
-                    document.getElementById('successModal').classList.add('show');
-                    
-                    // Redireciona após 2.5 segundos
-                    setTimeout(function() {
-                        window.location.href = '../login/index.php';
-                    }, 2500);
-                } else {
-                    // Erro no registro
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Registro bem-sucedido
+                        fecharModal(); // Fecha o modal de termos
+
+                        // Abre o modal de sucesso
+                        document.getElementById('successModal').classList.add('show');
+
+                        // Redireciona após 2.5 segundos
+                        setTimeout(function () {
+                            window.location.href = '../login/index.html';
+                        }, 2500);
+                    } else {
+                        // Erro no registro
+                        fecharModal();
+
+                        // Exibir erro geral
+                        const mainError = document.getElementById('mainError');
+                        mainError.innerText = data.message;
+                        mainError.style.display = 'block';
+
+                        // Tentar mapear erros para campos específicos
+                        const msg = data.message.toLowerCase();
+
+                        if (msg.includes('primeiro nome')) mostrarErroCampo('first_name', 'Primeiro nome é obrigatório');
+                        if (msg.includes('sobrenome')) mostrarErroCampo('last_name', 'Sobrenome é obrigatório');
+                        if (msg.includes('email')) mostrarErroCampo('email', msg.includes('inválido') ? 'Email inválido' : 'Email já cadastrado ou obrigatório');
+                        if (msg.includes('senha')) mostrarErroCampo('password', 'Senha inválida (min 6 caracteres)');
+                        if (msg.includes('telefone')) mostrarErroCampo('phone', msg.includes('cadastrado') ? 'Telefone já cadastrado' : 'Telefone é obrigatório');
+                        if (msg.includes('nascimento') || msg.includes('birthday')) mostrarErroCampo('birthday', 'Data de nascimento obrigatória');
+
+                        // Auto-hide error after 5 seconds
+                        setTimeout(function () {
+                            mainError.style.display = 'none';
+                        }, 5000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
                     fecharModal();
-                    
-                    // Exibir erro geral
-                    const mainError = document.getElementById('mainError');
-                    mainError.innerText = data.message;
-                    mainError.style.display = 'block';
-                    
-                    // Tentar mapear erros para campos específicos
-                    const msg = data.message.toLowerCase();
-                    
-                    if (msg.includes('primeiro nome')) mostrarErroCampo('first_name', 'Primeiro nome é obrigatório');
-                    if (msg.includes('sobrenome')) mostrarErroCampo('last_name', 'Sobrenome é obrigatório');
-                    if (msg.includes('email')) mostrarErroCampo('email', msg.includes('inválido') ? 'Email inválido' : 'Email já cadastrado ou obrigatório');
-                    if (msg.includes('senha')) mostrarErroCampo('password', 'Senha inválida (min 6 caracteres)');
-                    if (msg.includes('telefone')) mostrarErroCampo('phone', msg.includes('cadastrado') ? 'Telefone já cadastrado' : 'Telefone é obrigatório');
-                    if (msg.includes('nascimento') || msg.includes('birthday')) mostrarErroCampo('birthday', 'Data de nascimento obrigatória');
-                    
-                    // Auto-hide error after 5 seconds
-                    setTimeout(function() {
-                        mainError.style.display = 'none';
-                    }, 5000);
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                fecharModal();
-                alert('Erro ao processar o cadastro. Verifique o console.');
-            });
+                    alert('Erro ao processar o cadastro. Verifique o console.');
+                });
         }
 
         function mostrarErroCampo(id, mensagem) {
@@ -692,16 +735,16 @@
         }
 
         // Formatação de telefone
-        document.getElementById('phone').addEventListener('input', function(e) {
+        document.getElementById('phone').addEventListener('input', function (e) {
             let value = e.target.value.replace(/\D/g, '');
-            
+
             if (value.length > 11) {
                 value = value.slice(0, 11);
             }
-            
+
             if (value.length <= 10) {
                 // Formato: (00) 0000-0000
-                value = value.replace(/(\d{2})(\d{0,4})(\d{0,4})/, function(match, p1, p2, p3) {
+                value = value.replace(/(\d{2})(\d{0,4})(\d{0,4})/, function (match, p1, p2, p3) {
                     let result = '';
                     if (p1) result += '(' + p1;
                     if (p2) result += ') ' + p2;
@@ -712,7 +755,7 @@
                 // Formato: (00) 00000-0000
                 value = value.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
             }
-            
+
             e.target.value = value;
         });
     </script>
@@ -720,4 +763,3 @@
 </body>
 
 </html>
-
