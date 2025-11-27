@@ -1,0 +1,45 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "index.html",
+            "use": "@vercel/static"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/$1"
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/login/index.php",
+            "destination": "/login/index.html"
+        },
+        {
+            "source": "/register/index.php",
+            "destination": "/register/index.html"
+        },
+        {
+            "source": "/forgot-password/index.php",
+            "destination": "/forgot-password/index.html"
+        },
+        {
+            "source": "/dashboard_logged/index.php",
+            "destination": "/dashboard_logged/index.html"
+        },
+        {
+            "source": "/dashboard_logged/area_administrativa/area_adm.php",
+            "destination": "/dashboard_logged/area_administrativa/area_adm.html"
+        },
+        {
+            "source": "/dashboard_logged/meu_perfil/meu_perfil.php",
+            "destination": "/dashboard_logged/meu_perfil/meu_perfil.html"
+        }
+    ]
+}
