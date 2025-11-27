@@ -26,16 +26,16 @@ async function loadProducts() {
     try {
         // Adicionamos ?t=timestamp para evitar cache do navegador e pegar sempre a versão mais recente
         const response = await fetch('products.json?t=' + new Date().getTime());
-        
+
         if (!response.ok) {
             throw new Error('Não foi possível carregar o arquivo products.json');
         }
-        
+
         products = await response.json();
-        
+
         // Inicializa a lista filtrada com todos os produtos
         filteredProducts = [...products];
-        
+
         // Inicializa as quantidades e períodos padrão para cada produto carregado
         products.forEach(product => {
             productQuantities[product.id] = 1;
@@ -44,7 +44,7 @@ async function loadProducts() {
 
         // Renderiza a tela inicial
         renderProducts();
-        
+
         // Após renderizar, atualiza os preços iniciais na interface
         setTimeout(() => {
             products.forEach(product => {
