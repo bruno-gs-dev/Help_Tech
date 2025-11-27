@@ -556,26 +556,29 @@
             'audio': '🎧'
         };
 
-        // Carregar produtos do banco de dados
+        // Carregar produtos do products.json (mesmos produtos da home)
         function loadProductsFromDB() {
-            const formData = new FormData();
-            formData.append('action', 'list');
-
-            fetch('alterar_informacoes.php', {
-                method: 'POST',
-                body: formData
-            })
+            // Carrega do mesmo arquivo JSON usado na home page
+            fetch('../../products.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    products = data.data;
-                    loadProducts();
-                } else {
-                    console.error('Erro ao carregar produtos:', data.message);
-                }
+                // Mapeia os campos do JSON (inglês) para os campos esperados (português)
+                products = data.map(product => ({
+                    id: product.id,
+                    nome: product.name,
+                    descricao: product.description,
+                    preco: product.price,
+                    categoria: product.category,
+                    status: product.status,
+                    imagem: product.image,
+                    avaliacao: product.rating,
+                    reviews: product.reviews
+                }));
+                loadProducts();
             })
             .catch(error => {
-                console.error('Erro:', error);
+                console.error('Erro ao carregar produtos:', error);
+                showNotification('Erro ao carregar produtos.', 'error');
             });
         }
 
