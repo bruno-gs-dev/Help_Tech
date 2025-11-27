@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,35 +32,44 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
+
         .logo-gradient {
             background: linear-gradient(135deg, #6366f1 0%, #10b981 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+
         .btn-gradient-primary {
             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
         }
+
         .btn-gradient-danger {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
         }
+
         .btn-gradient-secondary {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         }
+
         .glass-effect {
             backdrop-filter: blur(20px);
         }
+
         .stat-card {
             transition: all 0.3s ease;
         }
+
         .stat-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
+
         .sidebar-link {
             position: relative;
             overflow: hidden;
         }
+
         .sidebar-link::before {
             content: '';
             position: absolute;
@@ -71,15 +81,18 @@
             transform: translateX(-100%);
             transition: transform 0.3s ease;
         }
+
         .sidebar-link.active::before,
         .sidebar-link:hover::before {
             transform: translateX(0);
         }
+
         .sidebar-link.active {
             background: rgba(99, 102, 241, 0.1);
             color: #6366f1;
             font-weight: 600;
         }
+
         .modal {
             display: none;
             position: fixed;
@@ -91,28 +104,39 @@
             z-index: 9999;
             animation: fadeIn 0.2s ease;
         }
+
         .modal.show {
             display: flex;
             align-items: center;
             justify-content: center;
         }
+
         .modal-content {
             animation: slideIn 0.3s ease;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
+
         @keyframes slideIn {
             from {
                 opacity: 0;
                 transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         .image-preview {
             width: 100%;
             height: 200px;
@@ -121,13 +145,14 @@
         }
     </style>
 </head>
+
 <body class="font-inter text-gray-800">
     <!-- Header -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-6 py-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-4">
-                    <a href="../index.php" class="logo-gradient text-2xl font-bold no-underline">HelPTech!</a>
+                    <a href="../../index.html" class="logo-gradient text-2xl font-bold no-underline">HelPTech!</a>
                     <span class="text-sm text-gray-500 font-medium">/ Área Administrativa</span>
                 </div>
                 <div class="flex items-center gap-4">
@@ -135,7 +160,8 @@
                         <div class="text-sm font-semibold text-gray-800">Parceiro Admin</div>
                         <div class="text-xs text-gray-500">admin@helptech.com</div>
                     </div>
-                    <img src="../img/perfil_image.jpg" alt="Admin" class="w-10 h-10 rounded-full border-2 border-primary">
+                    <img src="../img/perfil_image.jpg" alt="Admin"
+                        class="w-10 h-10 rounded-full border-2 border-primary">
                 </div>
             </div>
         </div>
@@ -145,28 +171,34 @@
         <!-- Sidebar -->
         <aside class="w-64 bg-white border-r border-gray-200 p-6">
             <nav class="space-y-2">
-                <a href="#" onclick="showSection('dashboard')" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
+                <a href="#" onclick="showSection('dashboard')"
+                    class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
                     <span class="text-xl">📊</span>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" onclick="showSection('products')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
+                <a href="#" onclick="showSection('products')"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
                     <span class="text-xl">📦</span>
                     <span>Produtos</span>
                 </a>
-                <a href="#" onclick="showSection('orders')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
+                <a href="#" onclick="showSection('orders')"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
                     <span class="text-xl">🛒</span>
                     <span>Pedidos</span>
                 </a>
-                <a href="#" onclick="showSection('analytics')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
+                <a href="#" onclick="showSection('analytics')"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
                     <span class="text-xl">📈</span>
                     <span>Análises</span>
                 </a>
-                <a href="#" onclick="showSection('settings')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
+                <a href="#" onclick="showSection('settings')"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
                     <span class="text-xl">⚙️</span>
                     <span>Configurações</span>
                 </a>
                 <div class="pt-4 mt-4 border-t border-gray-200">
-                    <a href="../index.php" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all hover:text-danger">
+                    <a href="../../index.html"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all hover:text-danger">
                         <span class="text-xl">🏠</span>
                         <span>Voltar ao Site</span>
                     </a>
@@ -188,7 +220,8 @@
                     <div class="stat-card bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
                         <div class="flex justify-between items-start mb-4">
                             <div class="text-3xl">📦</div>
-                            <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-semibold">+12%</span>
+                            <span
+                                class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-semibold">+12%</span>
                         </div>
                         <div class="text-2xl font-bold text-gray-800 mb-1">47</div>
                         <div class="text-sm text-gray-600">Produtos Ativos</div>
@@ -196,7 +229,8 @@
                     <div class="stat-card bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
                         <div class="flex justify-between items-start mb-4">
                             <div class="text-3xl">🛒</div>
-                            <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-semibold">+8%</span>
+                            <span
+                                class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-semibold">+8%</span>
                         </div>
                         <div class="text-2xl font-bold text-gray-800 mb-1">23</div>
                         <div class="text-sm text-gray-600">Pedidos Este Mês</div>
@@ -204,7 +238,8 @@
                     <div class="stat-card bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
                         <div class="flex justify-between items-start mb-4">
                             <div class="text-3xl">💰</div>
-                            <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-semibold">+15%</span>
+                            <span
+                                class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-semibold">+15%</span>
                         </div>
                         <div class="text-2xl font-bold text-gray-800 mb-1">R$ 12.450</div>
                         <div class="text-sm text-gray-600">Receita Mensal</div>
@@ -212,7 +247,8 @@
                     <div class="stat-card bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
                         <div class="flex justify-between items-start mb-4">
                             <div class="text-3xl">⭐</div>
-                            <span class="text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full font-semibold">4.8</span>
+                            <span
+                                class="text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full font-semibold">4.8</span>
                         </div>
                         <div class="text-2xl font-bold text-gray-800 mb-1">156</div>
                         <div class="text-sm text-gray-600">Avaliações</div>
@@ -258,7 +294,8 @@
                         <h1 class="text-3xl font-bold text-gray-800 mb-2">Gerenciar Produtos</h1>
                         <p class="text-gray-600">Adicione, edite ou remova produtos do catálogo</p>
                     </div>
-                    <button onclick="openAddProductModal()" class="btn-gradient-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                    <button onclick="openAddProductModal()"
+                        class="btn-gradient-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
                         ➕ Adicionar Produto
                     </button>
                 </div>
@@ -266,8 +303,10 @@
                 <!-- Search and Filter -->
                 <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm mb-6">
                     <div class="flex gap-4">
-                        <input type="text" id="searchProduct" placeholder="Buscar produtos..." class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
-                        <select class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <input type="text" id="searchProduct" placeholder="Buscar produtos..."
+                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <select
+                            class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
                             <option value="">Todas as categorias</option>
                             <option value="notebook">Notebooks</option>
                             <option value="camera">Câmeras</option>
@@ -275,7 +314,8 @@
                             <option value="smartphone">Smartphones</option>
                             <option value="audio">Áudio</option>
                         </select>
-                        <select class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <select
+                            class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
                             <option value="">Todos os status</option>
                             <option value="available">Disponível</option>
                             <option value="rented">Alugado</option>
@@ -331,10 +371,12 @@
                                 <td class="px-6 py-4 text-sm text-gray-600">7 dias</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-gray-800">R$ 623,00</td>
                                 <td class="px-6 py-4">
-                                    <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">Ativo</span>
+                                    <span
+                                        class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">Ativo</span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <button class="text-primary hover:text-primary-dark text-sm font-medium">Ver detalhes</button>
+                                    <button class="text-primary hover:text-primary-dark text-sm font-medium">Ver
+                                        detalhes</button>
                                 </td>
                             </tr>
                             <tr class="hover:bg-gray-50">
@@ -344,10 +386,12 @@
                                 <td class="px-6 py-4 text-sm text-gray-600">3 dias</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-gray-800">R$ 405,00</td>
                                 <td class="px-6 py-4">
-                                    <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-semibold">Pendente</span>
+                                    <span
+                                        class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-semibold">Pendente</span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <button class="text-primary hover:text-primary-dark text-sm font-medium">Ver detalhes</button>
+                                    <button class="text-primary hover:text-primary-dark text-sm font-medium">Ver
+                                        detalhes</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -432,31 +476,44 @@
                     <form id="settingsForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Empresa</label>
-                            <input type="text" id="partnerName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando...">
+                            <input type="text" id="partnerName"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"
+                                placeholder="Carregando...">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">CPF/CNPJ (Opcional)</label>
-                            <input type="text" id="partnerCNPJ" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando...">
+                            <input type="text" id="partnerCNPJ"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"
+                                placeholder="Carregando...">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
-                            <input type="email" id="partnerEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando...">
+                            <input type="email" id="partnerEmail"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"
+                                placeholder="Carregando...">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
-                            <input type="tel" id="partnerPhone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando...">
+                            <input type="tel" id="partnerPhone"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"
+                                placeholder="Carregando...">
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
-                            <textarea id="partnerDescription" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando..."></textarea>
+                            <textarea id="partnerDescription" rows="3"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"
+                                placeholder="Carregando..."></textarea>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
-                            <input type="text" id="partnerAddress" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando...">
+                            <input type="text" id="partnerAddress"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"
+                                placeholder="Carregando...">
                         </div>
                     </form>
                     <div class="mt-6">
-                        <button id="saveSettingsBtn" class="btn-gradient-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        <button id="saveSettingsBtn"
+                            class="btn-gradient-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
                             💾 Salvar Alterações
                         </button>
                     </div>
@@ -470,17 +527,20 @@
         <div class="modal-content bg-white rounded-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex justify-between items-center">
                 <h2 class="text-2xl font-bold text-gray-800" id="modalTitle">Adicionar Novo Produto</h2>
-                <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-800 text-3xl">&times;</button>
+                <button onclick="closeProductModal()"
+                    class="text-gray-400 hover:text-gray-800 text-3xl">&times;</button>
             </div>
             <form id="productForm" class="p-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Produto *</label>
-                        <input type="text" id="productName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <input type="text" id="productName" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Categoria *</label>
-                        <select id="productCategory" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <select id="productCategory" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
                             <option value="">Selecione uma categoria</option>
                             <option value="notebook">💻 Notebooks</option>
                             <option value="camera">📸 Câmeras</option>
@@ -491,40 +551,48 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Preço por Dia (R$) *</label>
-                        <input type="number" id="productPrice" required min="0" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <input type="number" id="productPrice" required min="0" step="0.01"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
-                        <select id="productStatus" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <select id="productStatus" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
                             <option value="available">✅ Disponível</option>
                             <option value="rented">❌ Alugado</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Avaliação (0-5)</label>
-                        <input type="number" id="productRating" min="0" max="5" step="0.1" value="4.5" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <input type="number" id="productRating" min="0" max="5" step="0.1" value="4.5"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Descrição *</label>
-                        <textarea id="productDescription" required rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"></textarea>
+                        <textarea id="productDescription" required rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"></textarea>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">URL da Imagem *</label>
-                        <input type="url" id="productImage" required placeholder="https://exemplo.com/imagem.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <input type="url" id="productImage" required placeholder="https://exemplo.com/imagem.jpg"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
                         <p class="text-xs text-gray-500 mt-1">Cole a URL completa da imagem do produto</p>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Pré-visualização da Imagem</label>
-                        <div id="imagePreview" class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                        <div id="imagePreview"
+                            class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                             <span class="text-gray-400">A imagem aparecerá aqui</span>
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-4 mt-8">
-                    <button type="submit" class="btn-gradient-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex-1">
+                    <button type="submit"
+                        class="btn-gradient-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex-1">
                         💾 Salvar Produto
                     </button>
-                    <button type="button" onclick="closeProductModal()" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all">
+                    <button type="button" onclick="closeProductModal()"
+                        class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all">
                         Cancelar
                     </button>
                 </div>
@@ -533,6 +601,11 @@
     </div>
 
     <script>
+        // API Base URL - Detecta automaticamente se está em produção ou desenvolvimento
+        const API_BASE_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
+            : '/api';
+
         // Sample products data
         let products = [];
 
@@ -560,26 +633,26 @@
         function loadProductsFromDB() {
             // Carrega do mesmo arquivo JSON usado na home page
             fetch('../../products.json?t=' + new Date().getTime())
-            .then(response => response.json())
-            .then(data => {
-                // Mapeia os campos do JSON (inglês) para os campos esperados (português)
-                products = data.map(product => ({
-                    id: product.id,
-                    nome: product.name,
-                    descricao: product.description,
-                    preco: product.price,
-                    categoria: product.category,
-                    status: product.status,
-                    imagem: product.image,
-                    avaliacao: product.rating,
-                    reviews: product.reviews
-                }));
-                loadProducts();
-            })
-            .catch(error => {
-                console.error('Erro ao carregar produtos:', error);
-                showNotification('Erro ao carregar produtos.', 'error');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    // Mapeia os campos do JSON (inglês) para os campos esperados (português)
+                    products = data.map(product => ({
+                        id: product.id,
+                        nome: product.name,
+                        descricao: product.description,
+                        preco: product.price,
+                        categoria: product.category,
+                        status: product.status,
+                        imagem: product.image,
+                        avaliacao: product.rating,
+                        reviews: product.reviews
+                    }));
+                    loadProducts();
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar produtos:', error);
+                    showNotification('Erro ao carregar produtos.', 'error');
+                });
         }
 
         // Show section
@@ -588,10 +661,10 @@
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.add('hidden');
             });
-            
+
             // Show selected section
             document.getElementById(sectionName + '-section').classList.remove('hidden');
-            
+
             // Update sidebar active state
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 link.classList.remove('active');
@@ -610,7 +683,7 @@
             tbody.innerHTML = '';
 
             products.forEach(product => {
-                const statusBadge = product.status === 'available' 
+                const statusBadge = product.status === 'available'
                     ? '<span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">✅ Disponível</span>'
                     : '<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-semibold">❌ Alugado</span>';
 
@@ -662,37 +735,39 @@
             document.getElementById('productRating').value = product.avaliacao;
             document.getElementById('productDescription').value = product.descricao;
             document.getElementById('productImage').value = product.imagem;
-            
+
             // Show image preview
             document.getElementById('imagePreview').innerHTML = `<img src="${product.imagem}" class="image-preview" alt="Preview">`;
-            
+
             document.getElementById('productModal').classList.add('show');
         }
 
         // Delete product
         function deleteProduct(id) {
             if (confirm('Tem certeza que deseja excluir este produto?')) {
-                const formData = new FormData();
-                formData.append('action', 'delete');
-                formData.append('id', id);
-
-                fetch('alterar_informacoes.php', {
+                fetch(`${API_BASE_URL}/alterar_informacoes`, {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        id: id
+                    })
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification(data.message, 'success');
-                        loadProductsFromDB();
-                    } else {
-                        showNotification(data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    showNotification('Erro ao excluir produto.', 'error');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification(data.message, 'success');
+                            loadProductsFromDB();
+                        } else {
+                            showNotification(data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        showNotification('Erro ao excluir produto.', 'error');
+                    });
             }
         }
 
@@ -703,69 +778,73 @@
 
         // Carregar dados do parceiro nas configurações
         function loadPartnerSettings() {
-            const formData = new FormData();
-            formData.append('action', 'partner-info');
-
-            fetch('capturar_informacoes.php', {
+            fetch(`${API_BASE_URL}/capturar_informacoes`, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'partner-info'
+                })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.data) {
-                    const partner = data.data;
-                    document.getElementById('partnerName').value = partner.nome || '';
-                    document.getElementById('partnerCNPJ').value = partner.cnpj || '';
-                    document.getElementById('partnerEmail').value = partner.email || '';
-                    document.getElementById('partnerPhone').value = partner.telefone || '';
-                    document.getElementById('partnerDescription').value = partner.descricao || '';
-                    document.getElementById('partnerAddress').value = partner.endereco || '';
-                } else {
-                    console.error('Erro ao carregar dados do parceiro:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                showNotification('Erro ao carregar configurações.', 'error');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        const partner = data.data;
+                        document.getElementById('partnerName').value = partner.nome || '';
+                        document.getElementById('partnerCNPJ').value = partner.cnpj || '';
+                        document.getElementById('partnerEmail').value = partner.email || '';
+                        document.getElementById('partnerPhone').value = partner.telefone || '';
+                        document.getElementById('partnerDescription').value = partner.descricao || '';
+                        document.getElementById('partnerAddress').value = partner.endereco || '';
+                    } else {
+                        console.error('Erro ao carregar dados do parceiro:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    showNotification('Erro ao carregar configurações.', 'error');
+                });
         }
 
         // Salvar dados do parceiro
-        document.getElementById('saveSettingsBtn').addEventListener('click', function() {
-            const formData = new FormData();
-            formData.append('action', 'update-partner');
-            formData.append('nome', document.getElementById('partnerName').value);
-            formData.append('cnpj', document.getElementById('partnerCNPJ').value);
-            formData.append('email', document.getElementById('partnerEmail').value);
-            formData.append('telefone', document.getElementById('partnerPhone').value);
-            formData.append('descricao', document.getElementById('partnerDescription').value);
-            formData.append('endereco', document.getElementById('partnerAddress').value);
-
-            fetch('alterar_informacoes.php', {
+        document.getElementById('saveSettingsBtn').addEventListener('click', function () {
+            fetch(`${API_BASE_URL}/alterar_informacoes`, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'update-partner',
+                    nome: document.getElementById('partnerName').value,
+                    cnpj: document.getElementById('partnerCNPJ').value,
+                    email: document.getElementById('partnerEmail').value,
+                    telefone: document.getElementById('partnerPhone').value,
+                    descricao: document.getElementById('partnerDescription').value,
+                    endereco: document.getElementById('partnerAddress').value
+                })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification(data.message, 'success');
-                    loadPartnerSettings();
-                } else {
-                    showNotification(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                showNotification('Erro ao salvar configurações.', 'error');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                        loadPartnerSettings();
+                    } else {
+                        showNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    showNotification('Erro ao salvar configurações.', 'error');
+                });
         });
 
         // Image preview on URL input
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const imageInput = document.getElementById('productImage');
             const imagePreview = document.getElementById('imagePreview');
 
-            imageInput.addEventListener('input', function() {
+            imageInput.addEventListener('input', function () {
                 const url = this.value;
                 if (url) {
                     imagePreview.innerHTML = `<img src="${url}" class="image-preview" alt="Preview" onerror="this.parentElement.innerHTML='<span class=\\'text-red-500\\'>❌ Imagem não encontrada</span>'">`;
@@ -776,55 +855,58 @@
 
             // Carregar produtos do banco de dados
             loadProductsFromDB();
-            
+
             // Carregar dados do parceiro
             loadPartnerSettings();
         });
 
         // Handle form submission
-        document.getElementById('productForm').addEventListener('submit', function(e) {
+        document.getElementById('productForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const formData = new FormData();
-            formData.append('action', editingProductId ? 'edit' : 'add');
-            formData.append('name', document.getElementById('productName').value);
-            formData.append('category', document.getElementById('productCategory').value);
-            formData.append('price', document.getElementById('productPrice').value);
-            formData.append('status', document.getElementById('productStatus').value);
-            formData.append('rating', document.getElementById('productRating').value);
-            formData.append('description', document.getElementById('productDescription').value);
-            formData.append('image', document.getElementById('productImage').value);
-            
+            const productData = {
+                action: editingProductId ? 'edit' : 'add',
+                name: document.getElementById('productName').value,
+                category: document.getElementById('productCategory').value,
+                price: document.getElementById('productPrice').value,
+                status: document.getElementById('productStatus').value,
+                rating: document.getElementById('productRating').value,
+                description: document.getElementById('productDescription').value,
+                image: document.getElementById('productImage').value
+            };
+
             if (editingProductId) {
-                formData.append('id', editingProductId);
+                productData.id = editingProductId;
             }
 
-            fetch('alterar_informacoes.php', {
+            fetch(`${API_BASE_URL}/alterar_informacoes`, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(productData)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification(data.message, 'success');
-                    closeProductModal();
-                    loadProductsFromDB();
-                } else {
-                    showNotification(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                showNotification('Erro ao salvar produto.', 'error');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                        closeProductModal();
+                        loadProductsFromDB();
+                    } else {
+                        showNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    showNotification('Erro ao salvar produto.', 'error');
+                });
         });
 
         // Show notification
         function showNotification(message, type) {
             const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg text-white font-semibold z-[10000] ${
-                type === 'success' ? 'bg-green-500' : 'bg-red-500'
-            }`;
+            notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg text-white font-semibold z-[10000] ${type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                }`;
             notification.textContent = message;
             document.body.appendChild(notification);
 
@@ -836,19 +918,19 @@
         }
 
         // Search products
-        document.getElementById('searchProduct').addEventListener('input', function(e) {
+        document.getElementById('searchProduct').addEventListener('input', function (e) {
             const searchTerm = e.target.value.toLowerCase();
-            const filteredProducts = products.filter(p => 
-                p.nome.toLowerCase().includes(searchTerm) || 
+            const filteredProducts = products.filter(p =>
+                p.nome.toLowerCase().includes(searchTerm) ||
                 p.descricao.toLowerCase().includes(searchTerm)
             );
-            
+
             // Re-render table with filtered products
             const tbody = document.getElementById('productsTableBody');
             tbody.innerHTML = '';
-            
+
             filteredProducts.forEach(product => {
-                const statusBadge = product.status === 'available' 
+                const statusBadge = product.status === 'available'
                     ? '<span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">✅ Disponível</span>'
                     : '<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-semibold">❌ Alugado</span>';
 
@@ -878,18 +960,19 @@
         });
 
         // Close modal on click outside
-        document.getElementById('productModal').addEventListener('click', function(e) {
+        document.getElementById('productModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeProductModal();
             }
         });
 
         // Close modal on ESC key
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 closeProductModal();
             }
         });
     </script>
 </body>
+
 </html>

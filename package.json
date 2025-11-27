@@ -1,0 +1,21 @@
+{
+    "name": "helptech",
+    "version": "1.0.0",
+    "description": "HelPTech - Plataforma de Aluguel de Tecnologia",
+    "main": "index.html",
+    "scripts": {
+        "dev": "vercel dev",
+        "build": "echo 'Build complete'",
+        "deploy": "vercel --prod"
+    },
+    "keywords": [
+        "rental",
+        "technology",
+        "helptech"
+    ],
+    "author": "HelPTech",
+    "license": "MIT",
+    "engines": {
+        "node": ">=18.x"
+    }
+}
