@@ -1,0 +1,309 @@
+<?php
+session_start();
+
+// Verifica se está logado
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../login/index.php');
+    exit;
+}
+?>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelPTech! - Aluguel de Equipamentos Tecnológicos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    <script>
+        tailwind.config = 
+        {
+            theme: 
+            {
+                extend: 
+                {
+                    colors: 
+                    {
+                        'primary': '#6366f1',
+                        'primary-dark': '#4f46e5',
+                        'secondary': '#10b981',
+                        'accent': '#f59e0b',
+                        'danger': '#ef4444'
+                    },
+                    fontFamily: 
+                    {
+                        'inter': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-inter text-gray-800 min-h-screen">
+    <header class="sticky top-0 z-50 border-b border-gray-100 shadow-sm">
+        <div class="header-bg text-white py-3">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center text-sm font-medium">
+                    <div class="flex items-center gap-2">
+                        <span>🚚</span>
+                        <span>Entrega grátis na região metropolitana</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span>📞</span>
+                        <span>Suporte: (85) 3000-0000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white/95 glass-effect py-6">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex items-center gap-8">
+                    <a href="#" class="logo logo-gradient text-3xl font-bold no-underline relative" onclick="filterByCategory('all')">HelPTech!</a>
+                    
+                    <div class="flex-1 max-w-2xl">
+                        <div class="flex bg-white border-2 border-gray-200 rounded-2xl p-1 shadow-sm transition-all duration-200 focus-within:border-primary focus-within:shadow-lg focus-within:shadow-primary/10">
+                            <input type="text" id="searchInput" placeholder="Buscar produtos para aluguel..." 
+                                   class="flex-1 px-5 py-3.5 border-none text-base outline-none bg-transparent">
+                            <button onclick="filterProducts()" 
+                                    class="btn-gradient-primary text-white px-6 py-3.5 border-none rounded-xl cursor-pointer font-semibold text-sm whitespace-nowrap transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                                Buscar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-4">
+                        <button class="cart-button bg-white border-2 border-gray-200 text-gray-800 px-5 py-3 rounded-lg cursor-pointer flex items-center gap-3 text-sm font-medium transition-all duration-200 relative shadow-sm hover:border-primary hover:text-primary hover:-translate-y-0.5 hover:shadow-md" onclick="openCart()">
+                            <span>🛒</span>
+                            <div>
+                                <div class="text-xs text-gray-400">Carrinho</div>
+                                <div class="font-semibold">Aluguel</div>
+                            </div>
+                            <span class="cart-count btn-gradient-accent text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-semibold absolute -top-1 -right-1 shadow-sm" id="cartCount">0</span>
+                        </button>
+                    </div>
+                    <!-- Perfil do usuário -->
+                    <div class="relative">
+                        <button id="profileButton" class="flex items-center focus:outline-none">
+                            <img src="./img/perfil_image.jpg" alt="Foto de perfil"
+                                class="w-12 h-12 rounded-full border-2 border-gray-200 hover:border-primary transition-all duration-200 cursor-pointer">
+                        </button>
+                        <div id="profileMenu"
+                            class="hidden absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                            <a href="./meu_perfil/meu_perfil.php"
+                                class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">👤 Meu
+                                Perfil</a>
+                            <a href="./area_administrativa/area_adm.php"
+                                class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">🔧 Área
+                                Administrativa</a>
+                            <a href="#" class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">⚙️
+                                Opções</a>
+                            <a href="../index.html"
+                                class="block px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-danger transition-all">🚪 Sair</a>
+                        </div>
+                    </div>
+                    <script>
+                        // Menu do perfil
+                        const profileButton = document.getElementById("profileButton");
+                        const profileMenu = document.getElementById("profileMenu");
+
+                        profileButton.addEventListener("click", (event) => {
+                            event.stopPropagation(); // Evita fechar instantaneamente
+                            profileMenu.classList.toggle("hidden");
+                        });
+
+                        // Fecha o menu ao clicar fora
+                        window.addEventListener("click", () => {
+                            if (!profileMenu.classList.contains("hidden")) {
+                                profileMenu.classList.add("hidden");
+                            }
+                        });
+                    </script>
+                    <!---->
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white border-t border-gray-100 py-4 justify-items-center">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex items-center gap-8 text-sm overflow-x-auto scrollbar-hide">
+                    <a href="#" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10" onclick="filterByCategory('all')">📱 Todos</a>
+                    <a href="#" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10" onclick="filterByCategory('notebook')">💻 Notebooks</a>
+                    <a href="#" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10" onclick="filterByCategory('camera')">📸 Câmeras</a>
+                    <a href="#" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10" onclick="filterByCategory('console')">🎮 Videogames</a>
+                    <a href="#" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10" onclick="filterByCategory('smartphone')">📱 Smartphones</a>
+                    <a href="#" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10" onclick="filterByCategory('audio')">🎧 Áudio</a>
+                    <a href="#" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10">🔥 Promoções</a>
+                    <!--<a href="./login/index.php" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10">👤 Login</a>-->
+                    <!--<a href="./register/index.php" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10">✨ Registrar-se</a>-->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="py-8">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="bg-white/70 glass-light p-4 text-sm rounded-xl mb-8 border border-gray-100">
+                <div class="max-w-7xl mx-auto px-6">
+                    <a href="#" onclick="filterByCategory('all')" class="text-primary no-underline font-medium hover:underline">HelPTech!</a> › 
+                    <a href="#" class="text-primary no-underline font-medium hover:underline">Equipamentos</a> › 
+                    <span id="currentCategory">Aluguel de Tecnologia</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
+                <aside class="bg-white/90 glass-effect rounded-2xl border border-gray-100 shadow-md sticky top-36 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="font-semibold text-base mb-4 text-gray-800 flex items-center gap-2">🏷️ Categoria</div>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3 p-2 rounded-lg transition-colors duration-200 hover:bg-gray-50">
+                                <input type="checkbox" id="cat-all" value="" checked onchange="filterProducts()" class="w-4 h-4 accent-primary">
+                                <label for="cat-all" class="cursor-pointer flex-1 font-normal text-gray-600 text-sm">Todos os produtos</label>
+                            </div>
+                            <div class="flex items-center gap-3 p-2 rounded-lg transition-colors duration-200 hover:bg-gray-50">
+                                <input type="checkbox" id="cat-notebook" value="notebook" onchange="filterProducts()" class="w-4 h-4 accent-primary">
+                                <label for="cat-notebook" class="cursor-pointer flex-1 font-normal text-gray-600 text-sm">Notebooks</label>
+                            </div>
+                            <div class="flex items-center gap-3 p-2 rounded-lg transition-colors duration-200 hover:bg-gray-50">
+                                <input type="checkbox" id="cat-camera" value="camera" onchange="filterProducts()" class="w-4 h-4 accent-primary">
+                                <label for="cat-camera" class="cursor-pointer flex-1 font-normal text-gray-600 text-sm">Câmeras e Filmadoras</label>
+                            </div>
+                            <div class="flex items-center gap-3 p-2 rounded-lg transition-colors duration-200 hover:bg-gray-50">
+                                <input type="checkbox" id="cat-console" value="console" onchange="filterProducts()" class="w-4 h-4 accent-primary">
+                                <label for="cat-console" class="cursor-pointer flex-1 font-normal text-gray-600 text-sm">Videogames</label>
+                            </div>
+                            <div class="flex items-center gap-3 p-2 rounded-lg transition-colors duration-200 hover:bg-gray-50">
+                                <input type="checkbox" id="cat-smartphone" value="smartphone" onchange="filterProducts()" class="w-4 h-4 accent-primary">
+                                <label for="cat-smartphone" class="cursor-pointer flex-1 font-normal text-gray-600 text-sm">Smartphones</label>
+                            </div>
+                            <div class="flex items-center gap-3 p-2 rounded-lg transition-colors duration-200 hover:bg-gray-50">
+                                <input type="checkbox" id="cat-audio" value="audio" onchange="filterProducts()" class="w-4 h-4 accent-primary">
+                                <label for="cat-audio" class="cursor-pointer flex-1 font-normal text-gray-600 text-sm">Áudio e Som</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="font-semibold text-base mb-4 text-gray-800 flex items-center gap-2">📦 Disponibilidade</div>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3 p-2 rounded-lg transition-colors duration-200 hover:bg-gray-50">
+                                <input type="checkbox" id="status-available" value="available" checked onchange="filterProducts()" class="w-4 h-4 accent-primary">
+                                <label for="status-available" class="cursor-pointer flex-1 font-normal text-gray-600 text-sm">Disponível agora</label>
+                            </div>
+                            <div class="flex items-center gap-3 p-2 rounded-lg transition-colors duration-200 hover:bg-gray-50">
+                                <input type="checkbox" id="status-rented" value="rented" onchange="filterProducts()" class="w-4 h-4 accent-primary">
+                                <label for="status-rented" class="cursor-pointer flex-1 font-normal text-gray-600 text-sm">Alugado</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="font-semibold text-base mb-4 text-gray-800 flex items-center gap-2">💰 Faixa de Preço (por dia)</div>
+                        <div class="grid grid-cols-[1fr_auto_1fr] gap-3 items-center mt-4">
+                            <input type="number" placeholder="Mín" id="priceMin" 
+                                   class="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors duration-200 focus:outline-none focus:border-primary focus:shadow-sm focus:shadow-primary/10">
+                            <span class="text-gray-400 text-xs whitespace-nowrap">até</span>
+                            <input type="number" placeholder="Máx" id="priceMax"
+                                   class="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors duration-200 focus:outline-none focus:border-primary focus:shadow-sm focus:shadow-primary/10">
+                        </div>
+                        <button onclick="filterProducts()" 
+                                class="btn-gradient-primary text-white w-full px-3 py-3 border-none rounded-lg cursor-pointer font-medium text-sm transition-transform duration-200 mt-4 hover:-translate-y-0.5 hover:shadow-md">
+                            Aplicar Filtro
+                        </button>
+                    </div>
+                </aside>
+
+                <div class="bg-white/70 glass-effect rounded-2xl border border-gray-100 p-8 shadow-md">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-4 border-b border-gray-100 gap-4">
+                        <div class="text-sm text-gray-600 font-medium" id="resultsCount">Mostrando todos os produtos</div>
+                        <div class="flex items-center gap-3">
+                            <label class="text-sm text-gray-600 font-medium">Ordenar por:</label>
+                            <select id="sortOptions" onchange="sortProducts()" 
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white cursor-pointer transition-colors duration-200 focus:outline-none focus:border-primary">
+                                <option value="relevance">Relevância</option>
+                                <option value="price-low">Preço: menor para maior</option>
+                                <option value="price-high">Preço: maior para menor</option>
+                                <option value="name">Nome A-Z</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="productsGrid"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer-bg text-white pt-12 pb-8 mt-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-8">
+                <div class="footer-section">
+                    <h3 class="mb-6 text-lg font-semibold text-white">Sobre a HelPTech!</h3>
+                    <ul class="list-none space-y-3">
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Quem Somos</a></li>
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Como Funciona</a></li>
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Política de Aluguel</a></li>
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Termos de Uso</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 class="mb-6 text-lg font-semibold text-white">Atendimento</h3>
+                    <ul class="list-none space-y-3">
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Central de Ajuda</a></li>
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Fale Conosco</a></li>
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Status do Pedido</a></li>
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Devolução</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 class="mb-6 text-lg font-semibold text-white">Categorias</h3>
+                    <ul class="list-none space-y-3">
+                        <li><a href="#" onclick="filterByCategory('notebook')" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Notebooks</a></li>
+                        <li><a href="#" onclick="filterByCategory('camera')" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Câmeras Profissionais</a></li>
+                        <li><a href="#" onclick="filterByCategory('console')" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Videogames</a></li>
+                        <li><a href="#" onclick="filterByCategory('audio')" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">Equipamentos de Áudio</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 class="mb-6 text-lg font-semibold text-white">Formas de Pagamento</h3>
+                    <ul class="list-none space-y-3">
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">💳 Cartão de Crédito</a></li>
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">⚡ PIX</a></li>
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">📄 Boleto Bancário</a></li>
+                        <li><a href="#" class="text-gray-300 no-underline text-sm transition-colors duration-200 hover:text-primary">🏦 Transferência</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center pt-8 border-t border-gray-600 text-sm text-gray-400">
+                © 2025 HelPTech! Todos os direitos reservados. | CNPJ: 00.000.000/0001-00
+            </div>
+        </div>
+    </footer>
+
+    <div class="cart-modal fixed inset-0 bg-black/50 glass-light z-[2000] hidden animate-fade-in" id="cartModal">
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl max-w-2xl w-[90%] max-h-[80vh] overflow-hidden shadow-2xl animate-slide-in">
+            <div class="px-8 pt-8 pb-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
+                <div class="text-xl font-bold text-gray-800">🛒 Carrinho de Aluguel</div>
+                <button class="close-cart bg-none border-none text-2xl cursor-pointer text-gray-400 p-2 rounded-lg transition-all duration-200 hover:text-gray-800 hover:bg-gray-100" onclick="closeCart()">&times;</button>
+            </div>
+            <div class="p-8 max-h-96 overflow-y-auto" id="cartItems"></div>
+            <div class="px-8 py-8 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <div class="flex justify-between items-center mb-6 text-lg font-bold">
+                    <span>Total:</span>
+                    <span id="cartTotal">R$ 0,00</span>
+                </div>
+                <button onclick="checkout()" 
+                        class="btn-gradient-secondary text-white w-full px-4 py-4 border-none rounded-xl text-base font-semibold cursor-pointer transition-transform duration-200 uppercase tracking-wide hover:-translate-y-0.5 hover:shadow-lg">
+                    🚀 Prosseguir para o Aluguel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./main.js"></script>
+</body>
+</html>

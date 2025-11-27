@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área Administrativa - HelPTech!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#6366f1',
+                        'primary-dark': '#4f46e5',
+                        'secondary': '#10b981',
+                        'accent': '#f59e0b',
+                        'danger': '#ef4444'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        .logo-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .btn-gradient-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+        .btn-gradient-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        .btn-gradient-secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(20px);
+        }
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar-link {
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: linear-gradient(135deg, #6366f1 0%, #10b981 100%);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        .sidebar-link.active::before,
+        .sidebar-link:hover::before {
+            transform: translateX(0);
+        }
+        .sidebar-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+            font-weight: 600;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .image-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="font-inter text-gray-800">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="../index.php" class="logo-gradient text-2xl font-bold no-underline">HelPTech!</a>
+                    <span class="text-sm text-gray-500 font-medium">/ Área Administrativa</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <div class="text-sm font-semibold text-gray-800">Parceiro Admin</div>
+                        <div class="text-xs text-gray-500">admin@helptech.com</div>
+                    </div>
+                    <img src="../img/perfil_image.jpg" alt="Admin" class="w-10 h-10 rounded-full border-2 border-primary">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 p-6">
+            <nav class="space-y-2">
+                <a href="#" onclick="showSection('dashboard')" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
+                    <span class="text-xl">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="showSection('products')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
+                    <span class="text-xl">📦</span>
+                    <span>Produtos</span>
+                </a>
+                <a href="#" onclick="showSection('orders')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
+                    <span class="text-xl">🛒</span>
+                    <span>Pedidos</span>
+                </a>
+                <a href="#" onclick="showSection('analytics')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
+                    <span class="text-xl">📈</span>
+                    <span>Análises</span>
+                </a>
+                <a href="#" onclick="showSection('settings')" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
+                    <span class="text-xl">⚙️</span>
+                    <span>Configurações</span>
+                </a>
+                <div class="pt-4 mt-4 border-t border-gray-200">
+                    <a href="../index.php" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all hover:text-danger">
+                        <span class="text-xl">🏠</span>
+                        <span>Voltar ao Site</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="section">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Dashboard</h1>
+                    <p class="text-gray-600">Visão geral do seu negócio</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-3xl">📦</div>
+                            <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-semibold">+12%</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800 mb-1">47</div>
+                        <div class="text-sm text-gray-600">Produtos Ativos</div>
+                    </div>
+                    <div class="stat-card bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-3xl">🛒</div>
+                            <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-semibold">+8%</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800 mb-1">23</div>
+                        <div class="text-sm text-gray-600">Pedidos Este Mês</div>
+                    </div>
+                    <div class="stat-card bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-3xl">💰</div>
+                            <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-semibold">+15%</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800 mb-1">R$ 12.450</div>
+                        <div class="text-sm text-gray-600">Receita Mensal</div>
+                    </div>
+                    <div class="stat-card bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-3xl">⭐</div>
+                            <span class="text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full font-semibold">4.8</span>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800 mb-1">156</div>
+                        <div class="text-sm text-gray-600">Avaliações</div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Atividades Recentes</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl">🎉</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Novo pedido recebido</div>
+                                <div class="text-sm text-gray-600">MacBook Pro 16" - Cliente: João Silva</div>
+                            </div>
+                            <div class="text-xs text-gray-500">5 min atrás</div>
+                        </div>
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl">📦</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Produto adicionado</div>
+                                <div class="text-sm text-gray-600">iPhone 15 Pro Max adicionado ao catálogo</div>
+                            </div>
+                            <div class="text-xs text-gray-500">2h atrás</div>
+                        </div>
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="text-2xl">⭐</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">Nova avaliação</div>
+                                <div class="text-sm text-gray-600">Canon EOS R6 recebeu 5 estrelas</div>
+                            </div>
+                            <div class="text-xs text-gray-500">1 dia atrás</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Section -->
+            <div id="products-section" class="section hidden">
+                <div class="mb-8 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">Gerenciar Produtos</h1>
+                        <p class="text-gray-600">Adicione, edite ou remova produtos do catálogo</p>
+                    </div>
+                    <button onclick="openAddProductModal()" class="btn-gradient-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                        ➕ Adicionar Produto
+                    </button>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm mb-6">
+                    <div class="flex gap-4">
+                        <input type="text" id="searchProduct" placeholder="Buscar produtos..." class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <select class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                            <option value="">Todas as categorias</option>
+                            <option value="notebook">Notebooks</option>
+                            <option value="camera">Câmeras</option>
+                            <option value="console">Videogames</option>
+                            <option value="smartphone">Smartphones</option>
+                            <option value="audio">Áudio</option>
+                        </select>
+                        <select class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                            <option value="">Todos os status</option>
+                            <option value="available">Disponível</option>
+                            <option value="rented">Alugado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Produto</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Categoria</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Preço/Dia</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Avaliação</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-gray-700">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody" class="divide-y divide-gray-200">
+                            <!-- Products will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div id="orders-section" class="section hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Pedidos</h1>
+                    <p class="text-gray-600">Gerencie todos os pedidos de aluguel</p>
+                </div>
+
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">ID</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Cliente</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Produto</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Período</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Total</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-gray-700">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 text-sm text-gray-800 font-mono">#001</td>
+                                <td class="px-6 py-4 text-sm text-gray-800">João Silva</td>
+                                <td class="px-6 py-4 text-sm text-gray-800">MacBook Pro 16"</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">7 dias</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-gray-800">R$ 623,00</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">Ativo</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-primary hover:text-primary-dark text-sm font-medium">Ver detalhes</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 text-sm text-gray-800 font-mono">#002</td>
+                                <td class="px-6 py-4 text-sm text-gray-800">Maria Santos</td>
+                                <td class="px-6 py-4 text-sm text-gray-800">Canon EOS R6</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">3 dias</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-gray-800">R$ 405,00</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-semibold">Pendente</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-primary hover:text-primary-dark text-sm font-medium">Ver detalhes</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div id="analytics-section" class="section hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Análises</h1>
+                    <p class="text-gray-600">Insights sobre o desempenho do seu negócio</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Produtos Mais Alugados</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-700">MacBook Pro 16"</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="h-full bg-primary rounded-full" style="width: 85%"></div>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-800">85%</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-700">iPhone 15 Pro Max</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="h-full bg-primary rounded-full" style="width: 72%"></div>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-800">72%</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-700">PlayStation 5</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="h-full bg-primary rounded-full" style="width: 68%"></div>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-800">68%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Receita por Categoria</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-700">💻 Notebooks</span>
+                                <span class="text-sm font-semibold text-gray-800">R$ 5.240</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-700">📱 Smartphones</span>
+                                <span class="text-sm font-semibold text-gray-800">R$ 3.890</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-700">🎮 Videogames</span>
+                                <span class="text-sm font-semibold text-gray-800">R$ 2.120</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-700">📸 Câmeras</span>
+                                <span class="text-sm font-semibold text-gray-800">R$ 1.200</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings-section" class="section hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Configurações</h1>
+                    <p class="text-gray-600">Gerencie suas preferências e configurações</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6">Informações do Parceiro</h3>
+                    <form id="settingsForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Empresa</label>
+                            <input type="text" id="partnerName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">CPF/CNPJ (Opcional)</label>
+                            <input type="text" id="partnerCNPJ" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
+                            <input type="email" id="partnerEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
+                            <input type="tel" id="partnerPhone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando...">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                            <textarea id="partnerDescription" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando..."></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
+                            <input type="text" id="partnerAddress" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="Carregando...">
+                        </div>
+                    </form>
+                    <div class="mt-6">
+                        <button id="saveSettingsBtn" class="btn-gradient-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                            💾 Salvar Alterações
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content bg-white rounded-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-800" id="modalTitle">Adicionar Novo Produto</h2>
+                <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-800 text-3xl">&times;</button>
+            </div>
+            <form id="productForm" class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Produto *</label>
+                        <input type="text" id="productName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoria *</label>
+                        <select id="productCategory" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                            <option value="">Selecione uma categoria</option>
+                            <option value="notebook">💻 Notebooks</option>
+                            <option value="camera">📸 Câmeras</option>
+                            <option value="console">🎮 Videogames</option>
+                            <option value="smartphone">📱 Smartphones</option>
+                            <option value="audio">🎧 Áudio</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Preço por Dia (R$) *</label>
+                        <input type="number" id="productPrice" required min="0" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
+                        <select id="productStatus" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                            <option value="available">✅ Disponível</option>
+                            <option value="rented">❌ Alugado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Avaliação (0-5)</label>
+                        <input type="number" id="productRating" min="0" max="5" step="0.1" value="4.5" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Descrição *</label>
+                        <textarea id="productDescription" required rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">URL da Imagem *</label>
+                        <input type="url" id="productImage" required placeholder="https://exemplo.com/imagem.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <p class="text-xs text-gray-500 mt-1">Cole a URL completa da imagem do produto</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pré-visualização da Imagem</label>
+                        <div id="imagePreview" class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                            <span class="text-gray-400">A imagem aparecerá aqui</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-4 mt-8">
+                    <button type="submit" class="btn-gradient-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex-1">
+                        💾 Salvar Produto
+                    </button>
+                    <button type="button" onclick="closeProductModal()" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample products data
+        let products = [];
+
+        let editingProductId = null;
+
+        // Category names mapping
+        const categoryNames = {
+            'notebook': 'Notebooks',
+            'camera': 'Câmeras',
+            'console': 'Videogames',
+            'smartphone': 'Smartphones',
+            'audio': 'Áudio'
+        };
+
+        // Category emojis
+        const categoryEmojis = {
+            'notebook': '💻',
+            'camera': '📸',
+            'console': '🎮',
+            'smartphone': '📱',
+            'audio': '🎧'
+        };
+
+        // Carregar produtos do banco de dados
+        function loadProductsFromDB() {
+            const formData = new FormData();
+            formData.append('action', 'list');
+
+            fetch('alterar_informacoes.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    products = data.data;
+                    loadProducts();
+                } else {
+                    console.error('Erro ao carregar produtos:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        }
+
+        // Show section
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+            
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.closest('.sidebar-link').classList.add('active');
+
+            // Load products if products section
+            if (sectionName === 'products') {
+                loadProducts();
+            }
+        }
+
+        // Load products into table
+        function loadProducts() {
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = '';
+
+            products.forEach(product => {
+                const statusBadge = product.status === 'available' 
+                    ? '<span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">✅ Disponível</span>'
+                    : '<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-semibold">❌ Alugado</span>';
+
+                const row = `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <img src="${product.imagem}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover">
+                                <div>
+                                    <div class="font-semibold text-gray-800 text-sm">${product.nome}</div>
+                                    <div class="text-xs text-gray-500">Produto ID: ${product.id}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${categoryEmojis[product.categoria] || '📦'} ${categoryNames[product.categoria] || product.categoria}</td>
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-800">R$ ${parseFloat(product.preco).toFixed(2)}</td>
+                        <td class="px-6 py-4">${statusBadge}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">⭐ ${parseFloat(product.avaliacao).toFixed(1)}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="editProduct(${product.id})" class="text-primary hover:text-primary-dark text-sm font-medium mr-3">✏️ Editar</button>
+                            <button onclick="deleteProduct(${product.id})" class="text-danger hover:text-red-700 text-sm font-medium">🗑️ Excluir</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Open add product modal
+        function openAddProductModal() {
+            editingProductId = null;
+            document.getElementById('modalTitle').textContent = 'Adicionar Novo Produto';
+            document.getElementById('productForm').reset();
+            document.getElementById('imagePreview').innerHTML = '<span class="text-gray-400">A imagem aparecerá aqui</span>';
+            document.getElementById('productModal').classList.add('show');
+        }
+
+        // Edit product
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            editingProductId = id;
+            document.getElementById('modalTitle').textContent = 'Editar Produto';
+            document.getElementById('productName').value = product.nome;
+            document.getElementById('productCategory').value = product.categoria;
+            document.getElementById('productPrice').value = product.preco;
+            document.getElementById('productStatus').value = product.status;
+            document.getElementById('productRating').value = product.avaliacao;
+            document.getElementById('productDescription').value = product.descricao;
+            document.getElementById('productImage').value = product.imagem;
+            
+            // Show image preview
+            document.getElementById('imagePreview').innerHTML = `<img src="${product.imagem}" class="image-preview" alt="Preview">`;
+            
+            document.getElementById('productModal').classList.add('show');
+        }
+
+        // Delete product
+        function deleteProduct(id) {
+            if (confirm('Tem certeza que deseja excluir este produto?')) {
+                const formData = new FormData();
+                formData.append('action', 'delete');
+                formData.append('id', id);
+
+                fetch('alterar_informacoes.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                        loadProductsFromDB();
+                    } else {
+                        showNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    showNotification('Erro ao excluir produto.', 'error');
+                });
+            }
+        }
+
+        // Close product modal
+        function closeProductModal() {
+            document.getElementById('productModal').classList.remove('show');
+        }
+
+        // Carregar dados do parceiro nas configurações
+        function loadPartnerSettings() {
+            const formData = new FormData();
+            formData.append('action', 'partner-info');
+
+            fetch('capturar_informacoes.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    const partner = data.data;
+                    document.getElementById('partnerName').value = partner.nome || '';
+                    document.getElementById('partnerCNPJ').value = partner.cnpj || '';
+                    document.getElementById('partnerEmail').value = partner.email || '';
+                    document.getElementById('partnerPhone').value = partner.telefone || '';
+                    document.getElementById('partnerDescription').value = partner.descricao || '';
+                    document.getElementById('partnerAddress').value = partner.endereco || '';
+                } else {
+                    console.error('Erro ao carregar dados do parceiro:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                showNotification('Erro ao carregar configurações.', 'error');
+            });
+        }
+
+        // Salvar dados do parceiro
+        document.getElementById('saveSettingsBtn').addEventListener('click', function() {
+            const formData = new FormData();
+            formData.append('action', 'update-partner');
+            formData.append('nome', document.getElementById('partnerName').value);
+            formData.append('cnpj', document.getElementById('partnerCNPJ').value);
+            formData.append('email', document.getElementById('partnerEmail').value);
+            formData.append('telefone', document.getElementById('partnerPhone').value);
+            formData.append('descricao', document.getElementById('partnerDescription').value);
+            formData.append('endereco', document.getElementById('partnerAddress').value);
+
+            fetch('alterar_informacoes.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    loadPartnerSettings();
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                showNotification('Erro ao salvar configurações.', 'error');
+            });
+        });
+
+        // Image preview on URL input
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageInput = document.getElementById('productImage');
+            const imagePreview = document.getElementById('imagePreview');
+
+            imageInput.addEventListener('input', function() {
+                const url = this.value;
+                if (url) {
+                    imagePreview.innerHTML = `<img src="${url}" class="image-preview" alt="Preview" onerror="this.parentElement.innerHTML='<span class=\\'text-red-500\\'>❌ Imagem não encontrada</span>'">`;
+                } else {
+                    imagePreview.innerHTML = '<span class="text-gray-400">A imagem aparecerá aqui</span>';
+                }
+            });
+
+            // Carregar produtos do banco de dados
+            loadProductsFromDB();
+            
+            // Carregar dados do parceiro
+            loadPartnerSettings();
+        });
+
+        // Handle form submission
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('action', editingProductId ? 'edit' : 'add');
+            formData.append('name', document.getElementById('productName').value);
+            formData.append('category', document.getElementById('productCategory').value);
+            formData.append('price', document.getElementById('productPrice').value);
+            formData.append('status', document.getElementById('productStatus').value);
+            formData.append('rating', document.getElementById('productRating').value);
+            formData.append('description', document.getElementById('productDescription').value);
+            formData.append('image', document.getElementById('productImage').value);
+            
+            if (editingProductId) {
+                formData.append('id', editingProductId);
+            }
+
+            fetch('alterar_informacoes.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    closeProductModal();
+                    loadProductsFromDB();
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                showNotification('Erro ao salvar produto.', 'error');
+            });
+        });
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg text-white font-semibold z-[10000] ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Search products
+        document.getElementById('searchProduct').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredProducts = products.filter(p => 
+                p.nome.toLowerCase().includes(searchTerm) || 
+                p.descricao.toLowerCase().includes(searchTerm)
+            );
+            
+            // Re-render table with filtered products
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = '';
+            
+            filteredProducts.forEach(product => {
+                const statusBadge = product.status === 'available' 
+                    ? '<span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">✅ Disponível</span>'
+                    : '<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-semibold">❌ Alugado</span>';
+
+                const row = `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <img src="${product.imagem}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover">
+                                <div>
+                                    <div class="font-semibold text-gray-800 text-sm">${product.nome}</div>
+                                    <div class="text-xs text-gray-500">Produto ID: ${product.id}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${categoryEmojis[product.categoria] || '📦'} ${categoryNames[product.categoria] || product.categoria}</td>
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-800">R$ ${parseFloat(product.preco).toFixed(2)}</td>
+                        <td class="px-6 py-4">${statusBadge}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">⭐ ${parseFloat(product.avaliacao).toFixed(1)}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="editProduct(${product.id})" class="text-primary hover:text-primary-dark text-sm font-medium mr-3">✏️ Editar</button>
+                            <button onclick="deleteProduct(${product.id})" class="text-danger hover:text-red-700 text-sm font-medium">🗑️ Excluir</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        });
+
+        // Close modal on click outside
+        document.getElementById('productModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProductModal();
+            }
+        });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeProductModal();
+            }
+        });
+    </script>
+</body>
+</html>

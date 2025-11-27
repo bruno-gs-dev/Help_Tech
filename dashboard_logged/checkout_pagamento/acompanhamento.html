@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhar Pedido - HelPTech!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#6366f1',
+                        'primary-dark': '#4f46e5',
+                        'secondary': '#10b981',
+                        'accent': '#f59e0b',
+                        'danger': '#ef4444'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease',
+                        'pulse-dot': 'pulseDot 2s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            'from': { opacity: '0', transform: 'translateY(-10px)' },
+                            'to': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        pulseDot: {
+                            '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+                            '50%': { transform: 'scale(1.2)', opacity: '0.8' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-inter text-gray-800 min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <a href="../index.html" class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent no-underline">HelPTech!</a>
+                    <span class="text-sm text-gray-500 font-medium">/ Acompanhar Pedido</span>
+                </div>
+                <a href="../index.php" class="text-sm text-gray-600 hover:text-primary transition-colors duration-200">← Voltar</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="py-8">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Main Content -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Order Header -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-8 shadow-sm">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h1 class="text-3xl font-bold text-gray-800 mb-2">Pedido #00123</h1>
+                                <p class="text-sm text-gray-600">Realizado em 21 de Novembro, 2025</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 border border-secondary/20">
+                                    <div class="w-3 h-3 bg-secondary rounded-full animate-pulse"></div>
+                                    <span class="text-sm font-semibold text-secondary">Em Trânsito</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Info -->
+                        <div class="flex gap-4 pb-6 border-b border-gray-100">
+                            <img src="../img/macbook.jpg" alt="Produto" class="w-20 h-20 rounded-lg object-cover">
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">MacBook Pro 16"</div>
+                                <div class="text-sm text-gray-600 mt-1">1x • 7 dias de aluguel</div>
+                                <div class="text-sm font-bold text-primary mt-2">R$ 623,00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                        <div id="map" class="w-full h-96"></div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-8 shadow-sm">
+                        <h2 class="text-xl font-bold text-gray-800 mb-8 flex items-center gap-2">
+                            <span>📍</span> Rota de Entrega
+                        </h2>
+
+                        <div class="space-y-6">
+                            <!-- Step 1 - Collected -->
+                            <div class="flex gap-4">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-white font-bold text-lg mb-4">✓</div>
+                                    <div class="w-1 h-20 bg-secondary"></div>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800 mb-1">Pedido Coletado</h3>
+                                    <p class="text-sm text-gray-600 mb-2">HelPTech Warehouse - São Paulo, SP</p>
+                                    <p class="text-xs text-gray-500">20 de Novembro, 14:30</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 - In Transit -->
+                            <div class="flex gap-4">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-white font-bold text-lg mb-4 animate-pulse-dot">
+                                        <span class="w-3 h-3 bg-white rounded-full"></span>
+                                    </div>
+                                    <div class="w-1 h-20 bg-gray-300"></div>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800 mb-1">Em Trânsito</h3>
+                                    <p class="text-sm text-gray-600 mb-2">Saído de São Paulo em direção a Fortaleza</p>
+                                    <p class="text-xs text-gray-500">21 de Novembro, 08:00 - 45% do caminho</p>
+                                    <div class="mt-3 w-full bg-gray-200 rounded-full h-1.5">
+                                        <div class="bg-gradient-to-r from-primary to-secondary h-1.5 rounded-full" style="width: 45%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 3 - Destination -->
+                            <div class="flex gap-4">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-400 font-bold text-lg mb-4">
+                                        <span class="text-xl">📦</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800 mb-1">Entrega Programada</h3>
+                                    <p class="text-sm text-gray-600 mb-2">Rua das Flores, 123 - Aldeota, Fortaleza - CE</p>
+                                    <p class="text-xs text-gray-500">Previsão: 22 de Novembro, 14:00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Details -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-8 shadow-sm">
+                        <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            <span>🚚</span> Detalhes da Entrega
+                        </h2>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-2">Código de Rastreamento</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" readonly value="BR1234567890123" class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm font-mono">
+                                    <button onclick="copiarRastreamento()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors duration-200">Copiar</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-gray-600 mb-2">Transportadora</p>
+                                <p class="font-semibold text-gray-800">Loggi Express</p>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-gray-600 mb-2">Origem</p>
+                                <p class="font-semibold text-gray-800">São Paulo, SP</p>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-gray-600 mb-2">Destino</p>
+                                <p class="font-semibold text-gray-800">Fortaleza, CE</p>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-gray-600 mb-2">Distância Percorrida</p>
+                                <p class="font-semibold text-gray-800">1.847 km / 4.100 km</p>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-gray-600 mb-2">Tempo Estimado</p>
+                                <p class="font-semibold text-gray-800">2 dias</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <!-- Status Card -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-6 shadow-sm sticky top-24 space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <span>📊</span> Status Atual
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-3 h-3 bg-secondary rounded-full"></div>
+                                    <span class="text-sm font-medium text-gray-700">Coletado</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-3 h-3 bg-secondary rounded-full animate-pulse"></div>
+                                    <span class="text-sm font-medium text-gray-700">Em Trânsito</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                                    <span class="text-sm font-medium text-gray-500">Pendente</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Driver Info -->
+                        <div class="border-t border-gray-200 pt-6">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <span>👨‍💼</span> Motorista
+                            </h3>
+                            <div class="flex items-center gap-4 mb-4">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=motorista" alt="Motorista" class="w-16 h-16 rounded-full">
+                                <div>
+                                    <p class="font-semibold text-gray-800">Carlos Silva</p>
+                                    <p class="text-xs text-gray-600">5.0 ⭐ (248 avaliações)</p>
+                                </div>
+                            </div>
+                            <button onclick="entrarEmContato()" class="w-full px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors duration-200">
+                                📞 Entrar em Contato
+                            </button>
+                        </div>
+
+                        <!-- Estimated Delivery -->
+                        <div class="border-t border-gray-200 pt-6">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <span>⏰</span> Entrega Estimada
+                            </h3>
+                            <div class="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-4 text-center">
+                                <p class="text-2xl font-bold text-primary mb-1">22 de Nov</p>
+                                <p class="text-sm text-gray-600">14:00 - 16:00</p>
+                            </div>
+                        </div>
+
+                        <!-- Help -->
+                        <div class="border-t border-gray-200 pt-6">
+                            <button onclick="abrirSuporte()" class="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors duration-200">
+                                ❓ Precisa de Ajuda?
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Contact Modal -->
+    <div id="contactModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-8 text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Entre em Contato</h2>
+            <p class="text-gray-600 mb-6">Escolha a forma de contato:</p>
+            <div class="space-y-3">
+                <button onclick="enviarMensagem()" class="w-full px-4 py-3 bg-secondary text-white rounded-lg font-semibold hover:bg-green-600 transition-colors duration-200 flex items-center justify-center gap-2">
+                    💬 Enviar Mensagem
+                </button>
+                <button onclick="ligar()" class="w-full px-4 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors duration-200 flex items-center justify-center gap-2">
+                    📞 Ligar
+                </button>
+                <button onclick="fecharModal()" class="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors duration-200">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support Modal -->
+    <div id="supportModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Central de Ajuda</h2>
+            <div class="space-y-3 mb-6">
+                <button onclick="mostrarDuvida('duvida1')" class="w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                    <p class="font-semibold text-gray-800 text-sm">❓ Como rastrear meu pedido?</p>
+                </button>
+                <button onclick="mostrarDuvida('duvida2')" class="w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                    <p class="font-semibold text-gray-800 text-sm">❓ Posso reprogramar a entrega?</p>
+                </button>
+                <button onclick="mostrarDuvida('duvida3')" class="w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                    <p class="font-semibold text-gray-800 text-sm">❓ E se o produto chegar danificado?</p>
+                </button>
+                <button onclick="mostrarDuvida('duvida4')" class="w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                    <p class="font-semibold text-gray-800 text-sm">❓ Como cancelar meu pedido?</p>
+                </button>
+            </div>
+            <button onclick="fecharSuporte()" class="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors duration-200">
+                Fechar
+            </button>
+        </div>
+    </div>
+
+    <!-- Answer Modal -->
+    <div id="answerModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-8">
+            <h2 id="answerTitle" class="text-2xl font-bold text-gray-800 mb-4"></h2>
+            <p id="answerText" class="text-gray-600 mb-6"></p>
+            <button onclick="fecharResposta()" class="w-full px-4 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors duration-200">
+                Voltar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let map;
+        const respostas = {
+            'duvida1': {
+                titulo: 'Como rastrear meu pedido?',
+                texto: 'Você está na página de rastreamento agora! Aqui você pode ver a localização do seu pedido em tempo real no mapa, a rota de entrega e o status atual. O código de rastreamento é BR1234567890123.'
+            },
+            'duvida2': {
+                titulo: 'Posso reprogramar a entrega?',
+                texto: 'Sim! Entre em contato com o motorista através do botão "Entrar em Contato" ou ligue para a central de atendimento. Você pode reprogramar a entrega com até 2 horas de antecedência.'
+            },
+            'duvida3': {
+                titulo: 'E se o produto chegar danificado?',
+                texto: 'Caso o produto chegue danificado, fotografe o dano e entre em contato conosco imediatamente. Faremos a reposição do item ou devolução total do dinheiro em até 7 dias úteis.'
+            },
+            'duvida4': {
+                titulo: 'Como cancelar meu pedido?',
+                texto: 'Se o pedido ainda não saiu da origem (status "Pendente"), você pode cancelar diretamente em sua conta. Se já está em trânsito, entre em contato com o motorista para concordar com a devolução.'
+            }
+        };
+
+        // Initialize map
+        function initMap() {
+            map = L.map('map').setView([-3.119028, -60.021731], 6);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // São Paulo marker (origin)
+            const originMarker = L.marker([-23.5505, -46.6333], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            }).addTo(map).bindPopup('<b>Origem</b><br>São Paulo, SP<br>HelPTech Warehouse');
+
+            // Current location (aproximadamente no meio do caminho)
+            const currentMarker = L.marker([-9.977, -49.861], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            }).addTo(map).bindPopup('<b>Localização Atual</b><br>em Trânsito<br>45% do caminho');
+
+            // Fortaleza marker (destination)
+            const destMarker = L.marker([-3.731862, -38.527669], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            }).addTo(map).bindPopup('<b>Destino</b><br>Fortaleza, CE<br>Rua das Flores, 123');
+
+            // Draw route line
+            const routePoints = [
+                [-23.5505, -46.6333], // São Paulo
+                [-9.977, -49.861],    // Current
+                [-3.731862, -38.527669] // Fortaleza
+            ];
+            L.polyline(routePoints, {
+                color: '#6366f1',
+                weight: 3,
+                opacity: 0.7,
+                smoothFactor: 1
+            }).addTo(map);
+        }
+
+        // Copy tracking code
+        function copiarRastreamento() {
+            const codigo = 'BR1234567890123';
+            navigator.clipboard.writeText(codigo);
+            showNotification('Código copiado!', 'success');
+        }
+
+        // Contact functions
+        function entrarEmContato() {
+            document.getElementById('contactModal').classList.remove('hidden');
+        }
+
+        function fecharModal() {
+            document.getElementById('contactModal').classList.add('hidden');
+        }
+
+        function enviarMensagem() {
+            showNotification('Redirecionando para WhatsApp...', 'success');
+            // Aqui você pode redirecionar para WhatsApp do motorista
+            setTimeout(() => {
+                window.open('https://wa.me/85987654321?text=Olá%20Carlos!', '_blank');
+                fecharModal();
+            }, 500);
+        }
+
+        function ligar() {
+            showNotification('Iniciando chamada...', 'success');
+            // Aqui você pode redirecionar para app de telefone
+            setTimeout(() => {
+                window.location.href = 'tel:+5585987654321';
+                fecharModal();
+            }, 500);
+        }
+
+        // Support functions
+        function abrirSuporte() {
+            document.getElementById('supportModal').classList.remove('hidden');
+        }
+
+        function fecharSuporte() {
+            document.getElementById('supportModal').classList.add('hidden');
+        }
+
+        function mostrarDuvida(duvida) {
+            const resposta = respostas[duvida];
+            document.getElementById('answerTitle').textContent = resposta.titulo;
+            document.getElementById('answerText').textContent = resposta.texto;
+            document.getElementById('supportModal').classList.add('hidden');
+            document.getElementById('answerModal').classList.remove('hidden');
+        }
+
+        function fecharResposta() {
+            document.getElementById('answerModal').classList.add('hidden');
+            document.getElementById('supportModal').classList.remove('hidden');
+        }
+
+        // Notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-[10000] transition-all duration-300 transform translate-x-full ${
+                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initMap);
+
+        // Update progress animation
+        setInterval(() => {
+            const progress = document.querySelector('[style*="width: 45%"]');
+            if (progress) {
+                let current = 45;
+                current += Math.random() * 2;
+                if (current > 100) current = 100;
+                progress.style.width = current + '%';
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

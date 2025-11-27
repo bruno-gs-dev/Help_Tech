@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - HelPTech!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#6366f1',
+                        'primary-dark': '#4f46e5',
+                        'secondary': '#10b981',
+                        'accent': '#f59e0b',
+                        'danger': '#ef4444'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease',
+                        'scale': 'scaleIn 0.3s ease',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            'from': { opacity: '0', transform: 'translateY(-10px)' },
+                            'to': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        scaleIn: {
+                            'from': { opacity: '0', transform: 'scale(0.9)' },
+                            'to': { opacity: '1', transform: 'scale(1)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-inter text-gray-800 min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <a href="../index.html" class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent no-underline">HelPTech!</a>
+                    <span class="text-sm text-gray-500 font-medium">/ Finalizar Pedido</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <span>🔒</span>
+                    <span class="font-medium">Pagamento Seguro</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Progress Steps -->
+    <div class="bg-white border-b border-gray-100 py-6">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="flex justify-between items-center relative">
+                <div class="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 -z-10"></div>
+                
+                <div class="flex-1 flex flex-col items-center relative z-10">
+                    <div class="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center font-bold text-sm mb-2">1</div>
+                    <span class="text-xs font-medium text-gray-600">Carrinho</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center relative z-10">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center font-bold text-sm mb-2 shadow-lg">2</div>
+                    <span class="text-xs font-medium text-gray-800">Pagamento</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center relative z-10">
+                    <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-sm mb-2">3</div>
+                    <span class="text-xs font-medium text-gray-600">Confirmação</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="py-8">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Payment Section -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Personal Information -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-8 shadow-sm">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            <span>👤</span> Dados Pessoais
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nome Completo *</label>
+                                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200" placeholder="Seu nome completo">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">CPF *</label>
+                                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200" placeholder="000.000.000-00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Telefone *</label>
+                                <input type="tel" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200" placeholder="(00) 00000-0000">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">E-mail *</label>
+                                <input type="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200" placeholder="seu@email.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Address -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-8 shadow-sm">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            <span>📍</span> Endereço de Entrega
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">CEP *</label>
+                                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200" placeholder="00000-000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Número *</label>
+                                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200" placeholder="123">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Rua *</label>
+                                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200" placeholder="Nome da rua">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Bairro *</label>
+                                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200" placeholder="Seu bairro">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Complemento</label>
+                                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200" placeholder="Apto, Bloco, etc">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Cidade *</label>
+                                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200" placeholder="Sua cidade">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Estado *</label>
+                                <select required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                    <option value="">Selecione</option>
+                                    <option value="CE">Ceará</option>
+                                    <option value="SP">São Paulo</option>
+                                    <option value="RJ">Rio de Janeiro</option>
+                                    <option value="MG">Minas Gerais</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-8 shadow-sm">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            <span>💳</span> Forma de Pagamento
+                        </h2>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <div id="pix-method" onclick="selectPayment('pix')" class="relative rounded-xl p-6 text-center border-2 border-gray-200 cursor-pointer transition-all duration-300 hover:border-primary hover:-translate-y-1 hover:shadow-lg">
+                                <div class="flex justify-center mb-2">
+                                    <img src="https://www.advocacianunes.com.br/wp-content/uploads/2022/04/logo-pix-icone-1024.png" 
+                                         alt="PIX" 
+                                         class="w-10 h-10 object-contain">
+                                </div>
+                                <div class="font-semibold text-gray-800 text-sm">PIX</div>
+                                <div class="text-xs text-gray-500 mt-1">Aprovação imediata</div>
+                            </div>
+                            <div id="credit-method" onclick="selectPayment('credit')" class="relative rounded-xl p-6 text-center border-2 border-gray-200 cursor-pointer transition-all duration-300 hover:border-primary hover:-translate-y-1 hover:shadow-lg">
+                                <div class="text-4xl mb-2">💳</div>
+                                <div class="font-semibold text-gray-800 text-sm">Cartão</div>
+                                <div class="text-xs text-gray-500 mt-1">Crédito/Débito</div>
+                            </div>
+                            <div id="boleto-method" onclick="selectPayment('boleto')" class="relative rounded-xl p-6 text-center border-2 border-gray-200 cursor-pointer transition-all duration-300 hover:border-primary hover:-translate-y-1 hover:shadow-lg">
+                                <div class="text-4xl mb-2">📄</div>
+                                <div class="font-semibold text-gray-800 text-sm">Boleto</div>
+                                <div class="text-xs text-gray-500 mt-1">Até 3 dias úteis</div>
+                            </div>
+                            <div id="transfer-method" onclick="selectPayment('transfer')" class="relative rounded-xl p-6 text-center border-2 border-gray-200 cursor-pointer transition-all duration-300 hover:border-primary hover:-translate-y-1 hover:shadow-lg">
+                                <div class="text-4xl mb-2">🏦</div>
+                                <div class="font-semibold text-gray-800 text-sm">Transferência</div>
+                                <div class="text-xs text-gray-500 mt-1">Bancária</div>
+                            </div>
+                        </div>
+
+                        <!-- PIX Payment -->
+                        <div id="pix-content" class="hidden">
+                            <div class="border-t border-gray-200 pt-6">
+                                <div class="text-center">
+                                    <h3 class="text-lg font-bold text-gray-800 mb-4">Pagamento via PIX</h3>
+                                    <p class="text-sm text-gray-600 mb-6">Escaneie o QR Code abaixo com o app do seu banco</p>
+                                    
+                                    <div class="flex justify-center mb-6">
+                                        <div class="bg-white p-5 rounded-lg shadow-lg inline-block">
+                                            <div class="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                <img src="./codigo_pix.jpg" alt="codigo_pix">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                        <p class="text-xs text-gray-600 mb-2">Ou copie o código PIX:</p>
+                                        <div class="flex items-center gap-2">
+                                            <input type="text" readonly value="00020126580014BR.GOV.BCB.PIX..." class="flex-1 px-3 py-2 bg-white border border-gray-300 rounded text-xs font-mono">
+                                            <button onclick="copyPixCode()" class="bg-gradient-to-r from-primary to-primary-dark text-white px-4 py-2 rounded text-sm font-semibold hover:shadow-lg transition-all duration-200">Copiar</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-sm text-gray-600 space-y-1">
+                                        <p>✓ Aprovação automática após pagamento</p>
+                                        <p>✓ Válido por 30 minutos</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Credit Card Payment -->
+                        <div id="credit-content" class="hidden">
+                            <div class="border-t border-gray-200 pt-6">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">Dados do Cartão</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Número do Cartão *</label>
+                                        <input type="text" placeholder="0000 0000 0000 0000" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome no Cartão *</label>
+                                        <input type="text" placeholder="Como está impresso no cartão" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Validade *</label>
+                                            <input type="text" placeholder="MM/AA" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">CVV *</label>
+                                            <input type="text" placeholder="000" maxlength="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Parcelas</label>
+                                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                            <option>1x de R$ 623,00 sem juros</option>
+                                            <option>2x de R$ 311,50 sem juros</option>
+                                            <option>3x de R$ 207,67 sem juros</option>
+                                            <option>4x de R$ 165,75 (total: R$ 663,00)</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="saveCard" class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2">
+                                        <label for="saveCard" class="text-sm text-gray-600">Salvar cartão para próximas compras</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boleto Payment -->
+                        <div id="boleto-content" class="hidden">
+                            <div class="border-t border-gray-200 pt-6">
+                                <div class="text-center">
+                                    <h3 class="text-lg font-bold text-gray-800 mb-4">Pagamento via Boleto</h3>
+                                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                                        <p class="text-sm text-amber-800">⚠️ O boleto será gerado após a confirmação do pedido</p>
+                                    </div>
+                                    <div class="text-left space-y-3 text-sm text-gray-600">
+                                        <p>✓ Vencimento em 3 dias úteis</p>
+                                        <p>✓ Pagamento pode ser feito em qualquer banco, lotérica ou app</p>
+                                        <p>✓ Aprovação em até 2 dias úteis após o pagamento</p>
+                                        <p>✓ Você receberá o boleto por e-mail</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Transfer Payment -->
+                        <div id="transfer-content" class="hidden">
+                            <div class="border-t border-gray-200 pt-6">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">Transferência Bancária</h3>
+                                <div class="bg-gray-50 rounded-lg p-6 space-y-4">
+                                    <div>
+                                        <p class="text-xs text-gray-600 mb-1">Banco:</p>
+                                        <p class="font-semibold text-gray-800">Banco do Brasil - 001</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-600 mb-1">Agência:</p>
+                                        <p class="font-semibold text-gray-800">1234-5</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-600 mb-1">Conta Corrente:</p>
+                                        <p class="font-semibold text-gray-800">98765-4</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-600 mb-1">CNPJ:</p>
+                                        <p class="font-semibold text-gray-800">00.000.000/0001-00</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-600 mb-1">Favorecido:</p>
+                                        <p class="font-semibold text-gray-800">HelPTech Tecnologia Ltda</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 text-sm text-gray-600">
+                                    <p class="mb-2">⚠️ Após realizar a transferência, envie o comprovante para:</p>
+                                    <p class="font-semibold text-primary">pagamentos@helptech.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-6 shadow-sm sticky top-24">
+                        <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            <span>📋</span> Resumo do Pedido
+                        </h2>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="flex gap-3 pb-4 border-b border-gray-100">
+                                <img src="../img/macbook.jpg" alt="Produto" class="w-16 h-16 rounded-lg object-cover">
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm text-gray-800 mb-1">MacBook Pro 16"</div>
+                                    <div class="text-xs text-gray-500">1x • 7 dias</div>
+                                    <div class="text-sm font-bold text-primary mt-1">R$ 623,00</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 mb-6 pb-6 border-b border-gray-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span class="font-semibold text-gray-800">R$ 623,00</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Entrega</span>
+                                <span class="font-semibold text-secondary">Grátis</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Desconto</span>
+                                <span class="font-semibold text-secondary">- R$ 0,00</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-lg font-bold text-gray-800">Total</span>
+                            <span class="text-2xl font-bold text-primary">R$ 623,00</span>
+                        </div>
+
+                        <button onclick="finishCheckout()" class="w-full bg-gradient-to-r from-secondary to-green-600 text-white py-4 rounded-xl font-bold text-base hover:shadow-lg transition-all duration-200 mb-4">
+                            🚀 Finalizar Pedido
+                        </button>
+
+                        <div class="text-center">
+                            <a href="../index.php" class="text-sm text-gray-600 hover:text-primary transition-colors duration-200">← Voltar ao carrinho</a>
+                        </div>
+
+                        <div class="mt-6 pt-6 border-t border-gray-200 space-y-3">
+                            <div class="flex items-center gap-2 text-xs text-gray-600">
+                                <span>🔒</span>
+                                <span>Pagamento 100% seguro</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-gray-600">
+                                <span>🚚</span>
+                                <span>Entrega grátis na região</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-gray-600">
+                                <span>✓</span>
+                                <span>Garantia de devolução</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-8 text-center animate-scale">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span class="text-5xl">✓</span>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Pedido Confirmado!</h2>
+            <p class="text-gray-600 mb-6">Seu pedido foi realizado com sucesso. Você receberá um e-mail com os detalhes em instantes.</p>
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <p class="text-sm text-gray-600 mb-1">Número do Pedido:</p>
+                <p class="text-xl font-bold text-primary">#00123</p>
+            </div>
+            <button onclick="closeSuccessModal()" class="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200">
+                Acompanhar Pedido
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let selectedPaymentMethod = null;
+
+        function selectPayment(method) {
+            selectedPaymentMethod = method;
+            
+            // Remove active styling from all payment methods
+            ['pix', 'credit', 'boleto', 'transfer'].forEach(m => {
+                const element = document.getElementById(m + '-method');
+                element.classList.remove('border-primary', 'bg-primary/5');
+                element.classList.add('border-gray-200');
+                
+                // Remove checkmark
+                const checkmark = element.querySelector('.checkmark');
+                if (checkmark) checkmark.remove();
+            });
+            
+            // Add active styling to selected method
+            const selectedElement = document.getElementById(method + '-method');
+            selectedElement.classList.remove('border-gray-200');
+            selectedElement.classList.add('border-primary', 'bg-primary/5');
+            
+            // Add checkmark
+            const checkmark = document.createElement('div');
+            checkmark.className = 'checkmark absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold';
+            checkmark.textContent = '✓';
+            selectedElement.appendChild(checkmark);
+            
+            // Hide all payment contents
+            document.querySelectorAll('[id$="-content"]').forEach(el => {
+                el.classList.add('hidden');
+            });
+            
+            // Show selected payment content with animation
+            const content = document.getElementById(method + '-content');
+            content.classList.remove('hidden');
+            content.classList.add('animate-fade-in');
+        }
+
+        function copyPixCode() {
+            const pixCode = "00020126580014BR.GOV.BCB.PIX...";
+            navigator.clipboard.writeText(pixCode);
+            showNotification('Código PIX copiado!', 'success');
+        }
+
+        function finishCheckout() {
+            if (!selectedPaymentMethod) {
+                showNotification('Selecione uma forma de pagamento', 'error');
+                return;
+            }
+
+            // Coletar dados do formulário
+            const formData = new FormData();
+            
+            // Dados pessoais
+            formData.append('nome_completo', document.querySelector('input[placeholder="Seu nome completo"]').value);
+            formData.append('cpf', document.querySelector('input[placeholder="000.000.000-00"]').value);
+            formData.append('email', document.querySelector('input[type="email"]').value);
+            formData.append('telefone', document.querySelector('input[placeholder="(00) 00000-0000"]')?.value || '');
+            
+            // Dados de endereço
+            const enderecoInputs = document.querySelectorAll('input[placeholder*="Rua"], input[placeholder*="Número"], input[placeholder*="Complemento"], input[placeholder*="CEP"], input[placeholder*="Cidade"]');
+            if (enderecoInputs.length >= 4) {
+                formData.append('endereco', enderecoInputs[0].value);
+                formData.append('numero', enderecoInputs[1].value);
+                formData.append('complemento', enderecoInputs[2].value);
+                formData.append('cep', enderecoInputs[3].value);
+            }
+            
+            // Forma de pagamento
+            formData.append('metodo_pagamento', selectedPaymentMethod);
+            
+            // Dados do cartão se for crédito
+            if (selectedPaymentMethod === 'credit') {
+                const cardInputs = document.querySelectorAll('#credit-content input');
+                formData.append('numero_cartao', cardInputs[0]?.value || '');
+                formData.append('nome_cartao', cardInputs[1]?.value || '');
+                formData.append('validade', cardInputs[2]?.value || '');
+                formData.append('cvv', cardInputs[3]?.value || '');
+            }
+            
+            // Valor total - extrair do resumo do pedido
+            const valorText = document.querySelector('.text-2xl.font-bold.text-primary').textContent;
+            const valor = valorText.replace('R$', '').replace(',', '.').trim();
+            formData.append('valor_total', valor);
+            
+            // Enviar para o backend
+            fetch('processar_pagamento.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Pagamento processado com sucesso!', 'success');
+                    
+                    // Mostrar modal de sucesso
+                    document.getElementById('successModal').classList.remove('hidden');
+                    
+                    // Se for PIX, mostrar o QR Code gerado
+                    if (selectedPaymentMethod === 'pix' && data.qr_code) {
+                        const valorText = document.querySelector('.text-2xl.font-bold.text-primary').textContent.trim();
+                        const pixModal = document.createElement('div');
+                        pixModal.innerHTML = `
+                            <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[10001]" onclick="this.remove()">
+                                <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+                                    <h3 class="text-2xl font-bold mb-4">Escaneie o QR Code Pix</h3>
+                                    <div class="mb-6">
+                                        <img src="./codigo_pix.jpg" alt="QR Code PIX" class="w-64 h-64 mx-auto">
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                        <p class="text-sm text-gray-600 mb-1">Valor a Pagar:</p>
+                                        <p class="text-3xl font-bold text-primary">${valorText}</p>
+                                    </div>
+                                    <p class="text-sm text-gray-500">Clique fora para fechar</p>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(pixModal);
+                    }
+                    
+                    // Se for boleto, gerar link de download
+                    if (selectedPaymentMethod === 'boleto' && data.boleto_url) {
+                        setTimeout(() => {
+                            window.open(data.boleto_url, '_blank');
+                        }, 1000);
+                    }
+                } else {
+                    showNotification(data.message || 'Erro ao processar pagamento', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                showNotification('Erro ao processar pagamento', 'error');
+            });
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            // Redirecionar para a página de acompanhamento
+            window.location.href = 'acompanhamento.html';
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-[10000] transition-all duration-300 transform translate-x-full ${
+                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
