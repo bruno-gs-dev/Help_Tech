@@ -1,9 +1,5 @@
-# Ignore PHP files (não serão usados na Vercel)
-**/*.php
-
 # Ignore development files
 .DS_Store
 .git
-.gitignore
 node_modules
 *.log
