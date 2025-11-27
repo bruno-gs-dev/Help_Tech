@@ -144,9 +144,16 @@
             border-radius: 8px;
         }
     </style>
+    <script>
+        // Verificar se o usuário está logado
+        const user = localStorage.getItem('user');
+        if (!user) {
+            window.location.href = '../../login/index.html';
+        }
+    </script>
 </head>
 
-<body class="font-inter text-gray-800">
+<body class="bg-gray-50 font-sans">
     <!-- Header -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-6 py-4">

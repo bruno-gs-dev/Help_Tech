@@ -7,6 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meu Perfil</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Verificar se o usuário está logado
+    const user = localStorage.getItem('user');
+    if (!user) {
+      window.location.href = '../../login/index.html';
+    }
+  </script>
 </head>
 
 <body class="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen flex items-center justify-center">
@@ -59,6 +66,7 @@
         window.onload = function () {
           document.querySelector('button').addEventListener('click', function () {
             // Redireciona para a página de logout ou encerra a sessão
+            localStorage.removeItem('user');
             window.location.href = '../../index.html'; // Ajuste o caminho conforme necessário
           });
         };
@@ -145,8 +153,8 @@
       // Criar elemento de notificação
       const notification = document.createElement('div');
       notification.className = `notification flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl max-w-md ${type === 'success'
-          ? 'bg-gradient-to-r from-green-500 to-emerald-600'
-          : 'bg-gradient-to-r from-red-500 to-rose-600'
+        ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+        : 'bg-gradient-to-r from-red-500 to-rose-600'
         } text-white`;
 
       // Ícone

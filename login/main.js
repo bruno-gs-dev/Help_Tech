@@ -122,6 +122,9 @@ class MinimalLoginForm {
             const data = await response.json();
 
             if (data.success) {
+                // Salvar dados do usuário no localStorage
+                localStorage.setItem('user', JSON.stringify(data.data));
+
                 // Show success state
                 this.showSuccess();
             } else {
