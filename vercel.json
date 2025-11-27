@@ -1,8 +1,30 @@
 {
     "version": 2,
-    "functions": {
-        "api/**/*.js": {
-            "runtime": "nodejs18.x"
+    "outputDirectory": ".",
+    "rewrites": [
+        {
+            "source": "/login",
+            "destination": "/login/index.html"
+        },
+        {
+            "source": "/register",
+            "destination": "/register/index.html"
+        },
+        {
+            "source": "/forgot-password",
+            "destination": "/forgot-password/index.html"
+        },
+        {
+            "source": "/dashboard_logged",
+            "destination": "/dashboard_logged/index.html"
+        },
+        {
+            "source": "/dashboard_logged/area_administrativa",
+            "destination": "/dashboard_logged/area_administrativa/area_adm.html"
+        },
+        {
+            "source": "/dashboard_logged/meu_perfil",
+            "destination": "/dashboard_logged/meu_perfil/meu_perfil.html"
         }
-    }
+    ]
 }

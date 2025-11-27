@@ -1,5 +1,12 @@
+# Ignore PHP files - Vercel não suporta PHP
+**/*.php
+*.php
+
 # Ignore development files
 .DS_Store
 .git
 node_modules
 *.log
+
+# Ignore vendor directories
+**/vendor/
