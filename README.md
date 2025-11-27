@@ -68,7 +68,7 @@ Para rodar apenas a interface (catálogo e carrinho), basta um navegador web mod
 ### 1. Clonar o Repositório
 
 ```bash
-git clone https://github.com/seu-usuario/helptech.git
+git clone https://github.com/bruno-gs-dev/Help_Tech.git
 cd helptech
 ```
 
@@ -95,11 +95,18 @@ CREATE TABLE usuarios (
     *   `login/script_login.php`
     *   `register/script_registro.php`
 
-    Por padrão, está configurado como:
-    *   Host: `localhost` ou `127.0.0.1`
-    *   Usuário: `root`
-    *   Senha: `joao01`
-    *   Banco: `aluguel_itens`
+    **⚠️ IMPORTANTE (Segurança):**
+
+    1.  **Credenciais do Banco**: Nunca commite senhas reais no código. Para produção, utilize variáveis de ambiente (arquivo `.env`). Exemplo de `.env`:
+        ```
+        DB_HOST=localhost
+        DB_USER=seu_usuario
+        DB_PASSWORD=sua_senha
+        DB_NAME=aluguel_itens
+        ```
+    2.  **Senhas de Usuários**: O código atual de exemplo armazena senhas em texto plano para fins didáticos. **Para produção, é obrigatório utilizar hash de senhas**.
+        *   Ao registrar: use `password_hash($password, PASSWORD_DEFAULT)`.
+        *   Ao logar: use `password_verify($senha_informada, $hash_banco)`.
 
 ### 3. Executando o Projeto
 
