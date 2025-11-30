@@ -409,7 +409,7 @@ function renderProducts() {
 // --- 5. LÓGICA DO CARRINHO ---
 
 function addToCart(productId) {
-    const product = products.find(p => p.id === productId);
+    const product = products.find(p => String(p.id) === String(productId));
     if (product && product.status === 'available') {
         const quantity = productQuantities[productId] || 1;
         const period = productPeriods[productId] || 1;
