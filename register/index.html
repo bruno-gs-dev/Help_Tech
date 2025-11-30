@@ -635,7 +635,7 @@
             window.open(pdfUrl, '_blank');
         }
 
-        function aceitarTermos() {
+        async function aceitarTermos() {
             const acceptTerms = document.getElementById('acceptTerms').checked;
             const acceptPrivacy = document.getElementById('acceptPrivacy').checked;
 
@@ -659,7 +659,53 @@
             registroData.forEach((value, key) => (formDataObj[key] = value));
             formDataObj.action = 'register';
 
-            // Enviar o formulário via AJAX
+            // If a Supabase client exists, use Supabase Auth for registration
+            if (window.SUPABASE_CLIENT && window.SUPABASE_CLIENT.auth) {
+                try {
+                    const password = formDataObj.password;
+                    const email = formDataObj.email;
+
+                    // Include some user metadata if available
+                    const userMetadata = {
+                        first_name: formDataObj.first_name || '',
+                        last_name: formDataObj.last_name || '',
+                        phone: formDataObj.phone || '',
+                        birthday: formDataObj.birthday || '',
+                    };
+
+                    const { data, error } = await window.SUPABASE_CLIENT.auth.signUp({
+                        email,
+                        password,
+                        options: {
+                            data: userMetadata
+                        }
+                    });
+
+                    if (error) {
+                        fecharModal();
+                        const mainError = document.getElementById('mainError');
+                        mainError.innerText = error.message || 'Erro no registro.';
+                        mainError.style.display = 'block';
+                        setTimeout(() => mainError.style.display = 'none', 5000);
+                        return;
+                    }
+
+                    // Success - some projects require email confirmation
+                    fecharModal();
+                    document.getElementById('successModal').classList.add('show');
+                    setTimeout(function () {
+                        window.location.href = '../login/index.html';
+                    }, 2500);
+                    return;
+                } catch (err) {
+                    console.error('Erro Supabase signup:', err);
+                    fecharModal();
+                    alert('Erro ao processar o cadastro. Verifique o console.');
+                    return;
+                }
+            }
+
+            // Fallback: use existing server-side auth endpoint
             fetch(`${API_BASE_URL}/auth`, {
                 method: 'POST',
                 headers: {

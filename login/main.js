@@ -102,33 +102,50 @@ class MinimalLoginForm {
         this.setLoading(true);
 
         try {
-            // API Base URL - Detecta automaticamente se está em produção ou desenvolvimento
-            const API_BASE_URL = window.location.hostname === 'localhost'
-                ? 'http://localhost:3000/api'
-                : '/api';
-
-            const response = await fetch(`${API_BASE_URL}/auth`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'login',
+            // If a Supabase client is available (create `supabase-config.js` from the example), use it
+            if (window.SUPABASE_CLIENT && window.SUPABASE_CLIENT.auth) {
+                const { data, error } = await window.SUPABASE_CLIENT.auth.signInWithPassword({
                     email: this.emailInput.value,
                     password: this.passwordInput.value
-                })
-            });
+                });
 
-            const data = await response.json();
+                if (error) {
+                    this.showError('password', error.message || 'Login failed.');
+                } else {
+                    // Save user/session for compatibility
+                    try {
+                        if (data.session) localStorage.setItem('supabase.session', JSON.stringify(data.session));
+                        if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+                    } catch (e) { /* ignore storage errors */ }
 
-            if (data.success) {
-                // Salvar dados do usuário no localStorage
-                localStorage.setItem('user', JSON.stringify(data.data));
-
-                // Show success state
-                this.showSuccess();
+                    this.showSuccess();
+                }
             } else {
-                this.showError('password', data.message || 'Login failed. Please try again.');
+                // Fallback: use existing server-side auth endpoint
+                const API_BASE_URL = window.location.hostname === 'localhost'
+                    ? 'http://localhost:3000/api'
+                    : '/api';
+
+                const response = await fetch(`${API_BASE_URL}/auth`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'login',
+                        email: this.emailInput.value,
+                        password: this.passwordInput.value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('user', JSON.stringify(data.data));
+                    this.showSuccess();
+                } else {
+                    this.showError('password', data.message || 'Login failed. Please try again.');
+                }
             }
         } catch (error) {
             console.error('Login error:', error);
