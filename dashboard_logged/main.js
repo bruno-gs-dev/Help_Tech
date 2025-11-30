@@ -1,4 +1,5 @@
-        const products = [
+        // Static fallback product list (used only if API fetch fails)
+        const staticProducts = [
             {
                 id: 1,
                 name: "Apple MacBook Pro 16\" M3 Pro - 18GB RAM, 512GB SSD",
@@ -96,6 +97,9 @@
                 reviews: 267
             }
         ];
+
+        // Runtime product list (populated from API or fallback)
+        let products = [];
 
     // Fallback image (inline SVG) para quando não houver imagem
     const IMAGE_FALLBACK = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+';
@@ -272,6 +276,63 @@
                 // usuário não logado vê apenas produtos disponíveis
                 filteredProducts = products.filter(p => p.status === 'available');
             }
+        }
+
+        // Inicializa quantidades/periodos e aplica fallback de imagem
+        function initProductState() {
+            products.forEach(product => {
+                productQuantities[product.id] = productQuantities[product.id] || 1;
+                productPeriods[product.id] = productPeriods[product.id] || 1;
+                if (!product.image) product.image = IMAGE_FALLBACK;
+            });
+        }
+
+        // Carrega produtos do servidor (/api/products), com fallback para /products.json e por fim para staticProducts
+        async function loadProducts() {
+            try {
+                const res = await fetch('/api/products');
+                if (res.ok) {
+                    const json = await res.json();
+                    // nossa API pode retornar { success, data }
+                    const data = json && json.data ? json.data : json;
+                    products = Array.isArray(data) ? data : (data ? [data] : []);
+                    console.log('[dashboard_logged] loaded products from /api/products', products.length);
+                } else {
+                    throw new Error('API status ' + res.status);
+                }
+            } catch (e) {
+                console.warn('[dashboard_logged] /api/products failed, trying /products.json', e);
+                try {
+                    const r2 = await fetch('/products.json');
+                    if (r2.ok) {
+                        const j2 = await r2.json();
+                        products = j2;
+                        console.log('[dashboard_logged] loaded products from /products.json', products.length);
+                    } else {
+                        products = staticProducts;
+                        console.log('[dashboard_logged] using staticProducts fallback', products.length);
+                    }
+                } catch (e2) {
+                    products = staticProducts;
+                    console.log('[dashboard_logged] using staticProducts fallback (fetch error)');
+                }
+            }
+
+            initProductState();
+            updateDisplayedProducts();
+            filterProducts();
+            renderProducts();
+
+            // After rendering, ensure price displays and disable decrement buttons where needed
+            setTimeout(() => {
+                products.forEach(product => {
+                    if (product.status === 'available') {
+                        updateProductPrice(product.id);
+                        const minusBtn = document.querySelector(`[onclick="changeQuantity(${product.id}, -1)"]`);
+                        if (minusBtn) minusBtn.disabled = true;
+                    }
+                });
+            }, 50);
         }
 
         // Função para renderizar os produtos
@@ -597,22 +658,10 @@
         // Event listeners para filtros em tempo real
         document.addEventListener('DOMContentLoaded', () => 
         {
-            updateDisplayedProducts();
-            renderProducts();
+            // Load products from API (with fallbacks) and render
+            loadProducts();
             
-            setTimeout(() => 
-            {
-                products.forEach(product => 
-                {
-                    if (product.status === 'available') 
-                    {
-                        updateProductPrice(product.id);
-                        
-                        const minusBtn = document.querySelector(`[onclick="changeQuantity(${product.id}, -1)"]`);
-                        if (minusBtn) minusBtn.disabled = true;
-                    }
-                });
-            }, 100);
+            
             
             const searchInput = document.getElementById('searchInput');
             searchInput.addEventListener('input', () => 
@@ -663,12 +712,7 @@
             renderProducts();
         }
         window.notifyLoginStateChange = notifyLoginStateChange;
-    // Inicializar quantidades e períodos
-        products.forEach(product => 
-        {
-            productQuantities[product.id] = 1;
-            productPeriods[product.id] = 1;
-        });
+        // product quantities and periods are initialized in initProductState() after loading products
 
         // Mapear nomes das categorias para exibição
         const categoryNames = {
