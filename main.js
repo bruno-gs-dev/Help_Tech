@@ -29,8 +29,12 @@ async function loadProducts() {
             ? 'http://localhost:3000/api'
             : '/api';
 
+        // Preferência: forçar a home a usar a mesma fonte que o painel de administração (API/Supabase)
+        // Se você quiser usar o cliente Supabase direto no cliente, defina window.FORCE_API_FOR_HOME = false
+        const FORCE_API_FOR_HOME = (window.FORCE_API_FOR_HOME === undefined) ? true : Boolean(window.FORCE_API_FOR_HOME);
+
         // Primeiro tenta carregar diretamente do Supabase client (client-side) se estiver configurado
-        if (window.SUPABASE_CLIENT) {
+        if (!FORCE_API_FOR_HOME && window.SUPABASE_CLIENT) {
             try {
                 const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
