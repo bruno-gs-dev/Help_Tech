@@ -30,6 +30,7 @@ async function loadProducts() {
                 const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
                 products = Array.isArray(data) ? data : [];
+                    console.log('[main] loaded products directly from SUPABASE_CLIENT, count:', products.length);
             } catch (e) {
                 console.warn('[main] erro ao buscar direto no Supabase client, tentando /api/products fallback:', e.message || e);
                 // fallback para endpoint serverless
@@ -45,9 +46,11 @@ async function loadProducts() {
                     const fallback = await fetch('products.json?t=' + new Date().getTime());
                     if (!fallback.ok) throw new Error('Não foi possível carregar os produtos do servidor nem do arquivo local');
                     products = await fallback.json();
+                        console.log('[main] loaded products from products.json, count:', Array.isArray(products) ? products.length : 0);
                 } else {
                     const body = await response.json();
                     products = body && body.data ? body.data : [];
+                        console.log('[main] loaded products from /api/products, count:', Array.isArray(products) ? products.length : 0, ' body:', body);
                 }
             }
         } else {
@@ -63,9 +66,11 @@ async function loadProducts() {
                 const fallback = await fetch('products.json?t=' + new Date().getTime());
                 if (!fallback.ok) throw new Error('Não foi possível carregar os produtos do servidor nem do arquivo local');
                 products = await fallback.json();
+                    console.log('[main] loaded products from products.json, count:', Array.isArray(products) ? products.length : 0);
             } else {
                 const body = await response.json();
                 products = body && body.data ? body.data : [];
+                    console.log('[main] loaded products from /api/products, count:', Array.isArray(products) ? products.length : 0, ' body:', body);
             }
         }
 
