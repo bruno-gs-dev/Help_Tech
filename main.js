@@ -24,6 +24,11 @@ const categoryNames = {
 // Função principal que inicia o sistema
 async function loadProducts() {
     try {
+        // API base (mesma lógica usada no admin) - detecta produção vs dev
+        const API_BASE_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
+            : '/api';
+
         // Primeiro tenta carregar diretamente do Supabase client (client-side) se estiver configurado
         if (window.SUPABASE_CLIENT) {
             try {
@@ -36,7 +41,7 @@ async function loadProducts() {
                 // fallback para endpoint serverless
                 let response;
                 try {
-                    response = await fetch('/api/products?t=' + new Date().getTime());
+                    response = await fetch(API_BASE_URL + '/products?t=' + new Date().getTime());
                 } catch (err) {
                     response = null;
                 }
@@ -50,14 +55,14 @@ async function loadProducts() {
                 } else {
                     const body = await response.json();
                     products = body && body.data ? body.data : [];
-                        console.log('[main] loaded products from /api/products, count:', Array.isArray(products) ? products.length : 0, ' body:', body);
+                    console.log('[main] loaded products from ' + API_BASE_URL + '/products, count:', Array.isArray(products) ? products.length : 0, ' body:', body);
                 }
             }
         } else {
             // Sem cliente Supabase, usa API serverless e depois fallback local
             let response;
             try {
-                response = await fetch('/api/products?t=' + new Date().getTime());
+                response = await fetch(API_BASE_URL + '/products?t=' + new Date().getTime());
             } catch (e) {
                 response = null;
             }
@@ -69,8 +74,8 @@ async function loadProducts() {
                     console.log('[main] loaded products from products.json, count:', Array.isArray(products) ? products.length : 0);
             } else {
                 const body = await response.json();
-                products = body && body.data ? body.data : [];
-                    console.log('[main] loaded products from /api/products, count:', Array.isArray(products) ? products.length : 0, ' body:', body);
+                    products = body && body.data ? body.data : [];
+                    console.log('[main] loaded products from ' + API_BASE_URL + '/products, count:', Array.isArray(products) ? products.length : 0, ' body:', body);
             }
         }
 
