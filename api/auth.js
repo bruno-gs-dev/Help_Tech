@@ -86,8 +86,8 @@ export default async function handler(req, res) {
             if (!password) return badRequest('Senha é obrigatória');
             if (typeof password === 'string' && password.length < 6) return badRequest('Senha deve ter ao menos 6 caracteres');
             // If Supabase server-side keys are available, create the user in Supabase
-            const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ongzofvycmljqdjruvpv.supabase.co';
-            const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9uZ3pvZnZ5Y21sanFkanJ1dnB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NDcsImV4cCI6MjA3ODY5Nzc0N30.i8W1i-OHBqzZ4CpGFMfQVpdiFFhL8KKkYSYMd048PGA';
+            const SUPABASE_URL = process.env.SUPABASE_URL;
+            const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
             // Build a basic user metadata object if name is provided
             const user_metadata = {};
