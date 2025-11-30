@@ -25,32 +25,57 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, message: msg });
     }
 
-    // LOGIN (keeps existing behavior: this endpoint is a fallback)
+    // LOGIN — try to authenticate against Supabase if possible
     if (action === 'login') {
         try {
-            if (email === 'admin@helptech.com' && password === 'admin123') {
-                return res.status(200).json({
-                    success: true,
-                    message: 'Login realizado com sucesso',
-                    data: {
-                        id: 1,
-                        name: 'Admin',
-                        email: email,
-                        token: 'exemplo-token-jwt'
+            const SUPABASE_URL = process.env.SUPABASE_URL;
+            const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+            // If Supabase config available, call the token endpoint (grant_type=password)
+            if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+                // Ensure fetch available
+                if (typeof fetch === 'undefined') {
+                    try {
+                        const nodeFetch = await import('node-fetch');
+                        global.fetch = nodeFetch.default || nodeFetch;
+                    } catch (e) {
+                        console.error('fetch is not available and node-fetch could not be imported', e);
+                        return res.status(500).json({ success: false, message: 'Erro interno: fetch não disponível no servidor' });
                     }
+                }
+
+                const tokenUrl = `${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/token?grant_type=password`;
+                const body = new URLSearchParams();
+                body.append('email', email || '');
+                body.append('password', password || '');
+
+                const resp = await fetch(tokenUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        apikey: SUPABASE_ANON_KEY
+                    },
+                    body: body.toString()
                 });
-            } else {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Email ou senha incorretos'
-                });
+
+                const text = await resp.text();
+                let data = null;
+                try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
+
+                if (!resp.ok) {
+                    // forward Supabase error
+                    console.error('Supabase sign-in error', resp.status, data);
+                    return res.status(resp.status === 400 ? 401 : 500).json({ success: false, message: 'Falha ao autenticar', status: resp.status, error: data });
+                }
+
+                return res.status(200).json({ success: true, message: 'Autenticado via Supabase', data });
             }
+
+            // If no Supabase client configured server-side, instruct to use client-side Supabase
+            return res.status(400).json({ success: false, message: 'Autenticação não configurada no servidor. Use Supabase client no frontend.' });
         } catch (error) {
-            return res.status(500).json({
-                success: false,
-                message: 'Erro ao fazer login',
-                error: error.message
-            });
+            console.error('Login error:', error);
+            return res.status(500).json({ success: false, message: 'Erro ao fazer login', error: error.message });
         }
     }
 
