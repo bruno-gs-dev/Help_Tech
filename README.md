@@ -114,3 +114,34 @@ Acesse `http://localhost:8000` no seu navegador.
 ---
 
 **Nota**: O arquivo `products.json` contém dados de exemplo para popular o catálogo na página inicial. Certifique-se de que ele esteja presente na raiz do projeto.
+
+## 🔁 Integração com Supabase (API)
+
+Adicionei uma implementação serverless em `api/products.js` que usa o cliente do Supabase para CRUD da tabela `products`.
+
+Passos rápidos para configurar localmente (PowerShell):
+
+1. Instale dependências:
+
+```powershell
+npm install
+```
+
+2. Defina as variáveis de ambiente (exemplo no PowerShell):
+
+```powershell
+$env:SUPABASE_URL = "https://seu-projeto.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY = "sua_service_role_key_aqui"
+```
+
+Nota: Para ambiente de produção (Vercel), defina `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` nas Environment Variables ou Secrets do provedor. Use a Service Role Key apenas em funções server-side (não em código cliente).
+
+3. Teste as rotas:
+
+- `GET /api/products` — lista todos os produtos.
+- `GET /api/products?id=<uuid>` — obtém um produto por `id`.
+- `POST /api/products` — cria um produto (body JSON com os campos da tabela `products`).
+- `PUT /api/products?id=<uuid>` — atualiza um produto (body JSON com campos a alterar).
+- `DELETE /api/products?id=<uuid>` — deleta um produto.
+
+Os retornos seguem o formato `{ success: boolean, data?: ..., message?: string, error?: string }`.
