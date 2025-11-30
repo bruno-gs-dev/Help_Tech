@@ -201,6 +201,47 @@
       try {
         store = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('supabase.session')) || null;
       } catch (e) { store = null; }
+      console.log('carregarInformacoesUsuario - local store:', store);
+
+      // If we have a profile cached locally, populate the UI immediately as a fallback
+      if (store && store.profile) {
+        try {
+          const cached = store.profile;
+          const metadata = cached.metadata || {};
+          const cachedUsuario = {
+            id: cached.id,
+            name: cached.full_name || cached.username || (store.user && store.user.email) || '',
+            email: metadata.email || (store.user && store.user.email) || '',
+            phone: metadata.phone || metadata.phone_number || '',
+            birthdate: metadata.birthdate || null,
+            image: cached.image || metadata.profile_pic || metadata.image || metadata.avatar || null
+          };
+
+          // Update display and form from cached profile
+          if (cachedUsuario.name) document.getElementById('display-name').textContent = cachedUsuario.name;
+          if (cachedUsuario.email) document.getElementById('display-email').textContent = cachedUsuario.email;
+          if (cachedUsuario.phone) document.getElementById('display-phone').textContent = cachedUsuario.phone;
+          if (cachedUsuario.birthdate) document.getElementById('display-birthdate').textContent = formatDate(cachedUsuario.birthdate);
+
+          if (cachedUsuario.image) {
+            const imgEl = document.getElementById('profile-image');
+            imgEl.src = cachedUsuario.image;
+            imgEl.classList.remove('hidden');
+            document.getElementById('profile-initial').classList.add('hidden');
+          } else {
+            const emailInitial = cachedUsuario.email ? cachedUsuario.email.charAt(0).toUpperCase() : '?';
+            document.querySelector('#profile-initial span').textContent = emailInitial;
+          }
+
+          // Fill form inputs
+          document.getElementById('name').value = cachedUsuario.name || '';
+          document.getElementById('email').value = cachedUsuario.email || '';
+          document.getElementById('phone').value = cachedUsuario.phone || '';
+          document.getElementById('birthdate').value = cachedUsuario.birthdate ? formatDate(cachedUsuario.birthdate) : '';
+        } catch (e) {
+          console.warn('Error applying cached profile to UI', e);
+        }
+      }
 
       // Prefer profile.id (already fetched at login), otherwise fall back to auth user id
       const userId = (store && store.profile && store.profile.id)
@@ -218,14 +259,15 @@
       })
         .then(response => response.json())
         .then(data => {
+          console.log('capturar_informacoes response:', data);
           if (data.success) {
             const usuario = data.data;
 
             // Atualizar informações de exibição
-            document.getElementById('display-name').textContent = usuario.name;
-            document.getElementById('display-email').textContent = usuario.email;
-            document.getElementById('display-phone').textContent = usuario.phone;
-            document.getElementById('display-birthdate').textContent = formatDate(usuario.birthdate);
+            document.getElementById('display-name').textContent = usuario.name || document.getElementById('display-name').textContent;
+            document.getElementById('display-email').textContent = usuario.email || document.getElementById('display-email').textContent;
+            document.getElementById('display-phone').textContent = usuario.phone || document.getElementById('display-phone').textContent;
+            if (usuario.birthdate) document.getElementById('display-birthdate').textContent = formatDate(usuario.birthdate);
 
             // Atualizar imagem ou inicial
             if (usuario.image) {
@@ -233,18 +275,15 @@
               imgEl.src = usuario.image;
               imgEl.classList.remove('hidden');
               document.getElementById('profile-initial').classList.add('hidden');
-            } else {
-              const emailInitial = usuario.email ? usuario.email.charAt(0).toUpperCase() : '?';
-              document.querySelector('#profile-initial span').textContent = emailInitial;
             }
 
             // Atualizar formulário - converte Y-m-d para DD/MM/YYYY
-            document.getElementById('name').value = usuario.name;
-            document.getElementById('email').value = usuario.email;
-            document.getElementById('phone').value = usuario.phone;
-            document.getElementById('birthdate').value = formatDate(usuario.birthdate);
+            if (usuario.name) document.getElementById('name').value = usuario.name;
+            if (usuario.email) document.getElementById('email').value = usuario.email;
+            if (usuario.phone) document.getElementById('phone').value = usuario.phone;
+            if (usuario.birthdate) document.getElementById('birthdate').value = formatDate(usuario.birthdate);
 
-            console.log('Informações carregadas:', usuario);
+            console.log('Informações carregadas do servidor:', usuario);
           } else {
             console.error('Erro ao carregar informações:', data.message);
             showNotification('Erro ao carregar informações do perfil.', 'error');
