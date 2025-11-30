@@ -311,21 +311,27 @@
 
       // Build a list of candidate identifiers to try against the profiles table
       const candidates = [];
-      if (store && store.profile) {
-        candidates.push(store.profile.id || null);
-        candidates.push(store.profile.user_id || null);
-        candidates.push(store.profile.uid || null);
-        // Some apps store identity under different keys in metadata
-        if (store.profile.metadata) {
-          candidates.push(store.profile.metadata.user_id || null);
-          candidates.push(store.profile.metadata.sub || null);
+      if (store) {
+        // 1. Direct user ID from auth object (most reliable)
+        if (store.user) {
+            candidates.push(store.user.id || null);
+            candidates.push(store.user.uid || null); // Legacy Firebase style
+            candidates.push(store.user.email || null);
         }
-      }
-      if (store && store.user) {
-        candidates.push(store.user.id || null);
-        candidates.push(store.user.uid || null);
-        // email may be useful if profiles.id stores email (less common)
-        candidates.push(store.user.email || null);
+        // 2. Session user ID (if structure is { session: { user: ... } })
+        if (store.session && store.session.user) {
+            candidates.push(store.session.user.id || null);
+        }
+        // 3. Profile ID (if cached)
+        if (store.profile) {
+            candidates.push(store.profile.id || null);
+            candidates.push(store.profile.user_id || null);
+            // Metadata fallbacks
+            if (store.profile.metadata) {
+                candidates.push(store.profile.metadata.user_id || null);
+                candidates.push(store.profile.metadata.sub || null);
+            }
+        }
       }
 
       // Remove duplicates and nulls

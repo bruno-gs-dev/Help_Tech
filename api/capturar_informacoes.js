@@ -51,7 +51,14 @@ export default async function handler(req, res) {
             const DEFAULT_SUPABASE_URL = 'https://ongzofvycmljqdjruvpv.supabase.co';
             const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9uZ3pvZnZ5Y21sanFkanJ1dnB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NDcsImV4cCI6MjA3ODY5Nzc0N30.i8W1i-OHBqzZ4CpGFMfQVpdiFFhL8KKkYSYMd048PGA';
             const SUPABASE_URL = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+
+            // Critical: Use Service Role Key to bypass RLS policies so we can read any profile by ID.
+            // If the environment variable isn't set, we fall back to Anon key, which will likely fail for non-admins due to RLS.
             const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+
+            if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+                console.warn('WARNING: SUPABASE_SERVICE_ROLE_KEY is not set. API calls for non-admin profiles may fail due to RLS.');
+            }
 
             const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
