@@ -96,7 +96,7 @@
                     <!-- Perfil do usuário -->
                     <div class="relative">
                         <button id="profileButton" class="flex items-center focus:outline-none">
-                            <img src="./img/perfil_image.jpg" alt="Foto de perfil"
+                            <img id="header-profile-img" src="./img/perfil_image.jpg" alt="Foto de perfil"
                                 class="w-12 h-12 rounded-full border-2 border-gray-200 hover:border-primary transition-all duration-200 cursor-pointer">
                         </button>
                         <div id="profileMenu"
@@ -137,6 +137,19 @@
                         function logout() {
                             localStorage.removeItem('user');
                             window.location.href = '../index.html';
+                        }
+                    </script>
+                    <script>
+                        // On load, try to set profile image from stored user/profile
+                        try {
+                            const store = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('supabase.session')) || null;
+                            const profileImg = document.getElementById('header-profile-img');
+                            if (store && store.profile && (store.profile.image || (store.profile.metadata && (store.profile.metadata.profile_pic || store.profile.metadata.image || store.profile.metadata.avatar)))) {
+                                const imgUrl = store.profile.image || store.profile.metadata.profile_pic || store.profile.metadata.image || store.profile.metadata.avatar;
+                                if (imgUrl && profileImg) profileImg.src = imgUrl;
+                            }
+                        } catch (e) {
+                            // ignore
                         }
                     </script>
                     <!---->

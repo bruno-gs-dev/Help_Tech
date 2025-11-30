@@ -60,19 +60,28 @@ export default async function handler(req, res) {
                     return res.status(400).json({ success: false, message: 'userId não fornecido' });
                 }
 
-                const { data, error } = await supabase.from('profiles').select('id,username,full_name,role,is_admin,metadata').eq('id', userId).single();
+                const { data, error } = await supabase.from('profiles').select('id,username,full_name,role,is_admin,metadata').eq('id', userId).maybeSingle();
                 if (error) {
                     console.error('Erro ao buscar profile:', error);
                     return res.status(500).json({ success: false, message: 'Erro ao buscar perfil', error: error.message });
                 }
 
+                if (!data) {
+                    return res.status(404).json({ success: false, message: 'Perfil não encontrado' });
+                }
+
+                // Extract image if present in metadata (support multiple keys)
+                const metadata = data.metadata || {};
+                const image = metadata.profile_pic || metadata.image || metadata.avatar || null;
+
                 // Map profile fields to expected response shape
                 const usuario = {
                     id: data.id,
                     name: data.full_name || data.username || null,
-                    email: (data.metadata && data.metadata.email) || null,
-                    phone: (data.metadata && data.metadata.phone) || null,
-                    birthdate: (data.metadata && data.metadata.birthdate) || null
+                    email: metadata.email || null,
+                    phone: metadata.phone || null,
+                    birthdate: metadata.birthdate || null,
+                    image: image
                 };
 
                 return res.status(200).json({ success: true, data: usuario });
