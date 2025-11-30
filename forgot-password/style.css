@@ -62,4 +62,20 @@ body {
     color: #007bff;
     text-decoration: none;
   }
+
+  /* Mobile Responsive */
+  @media (max-width: 480px) {
+    body {
+        padding: 16px;
+    }
+
+    .container {
+        padding: 24px;
+        width: 100%;
+    }
+
+    .form-box h2 {
+        font-size: 1.5rem;
+    }
+  }
   
