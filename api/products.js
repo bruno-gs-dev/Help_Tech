@@ -56,6 +56,14 @@ export default async function handler(req, res) {
     });
 
     try {
+        // Debug endpoint: /api/products?_debug=1 para checar conexão e detalhes de erro
+        const queryParams = req.query || {};
+        if (queryParams._debug === '1') {
+            // tenta um select simples e retorna detalhes
+            const test = await supabase.from('products').select('id').limit(1);
+            return res.status(200).json({ success: true, debug: test });
+        }
+
         // GET - listar ou obter por id
         if (req.method === 'GET') {
             const { id } = req.query || {};

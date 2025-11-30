@@ -607,6 +607,9 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+    <script src="/supabase-config.js"></script>
+
     <script>
         // API Base URL - Detecta automaticamente se está em produção ou desenvolvimento
         const API_BASE_URL = window.location.hostname === 'localhost'
@@ -636,50 +639,59 @@
             'audio': '🎧'
         };
 
-        // Carregar produtos do Supabase via API (fallback para JSON local)
-        function loadProductsFromDB() {
-            fetch(API_BASE_URL + '/products?t=' + new Date().getTime())
-                .then(response => response.json())
-                .then(payload => {
-                    const list = payload && payload.data ? payload.data : payload;
-                    // Mapeia os campos do JSON (inglês) para os campos esperados (português)
-                    products = list.map(product => ({
-                        id: product.id,
-                        nome: product.name || product.nome,
-                        descricao: product.description || product.descricao || '',
-                        preco: Number(product.price || product.preco || 0),
-                        categoria: product.category || product.categoria,
-                        status: product.status || 'available',
-                        imagem: product.image || product.imagem || '',
-                        avaliacao: Number(product.rating || product.avaliacao || 0),
-                        reviews: Number(product.reviews || 0)
-                    }));
-                    loadProducts();
-                })
-                .catch(error => {
-                    console.warn('Erro ao carregar via API, tentando arquivo local:', error);
-                    // fallback para arquivo estático
-                    fetch('../../products.json?t=' + new Date().getTime())
-                        .then(r => r.json())
-                        .then(data => {
-                            products = data.map(product => ({
-                                id: product.id,
-                                nome: product.name,
-                                descricao: product.description,
-                                preco: product.price,
-                                categoria: product.category,
-                                status: product.status,
-                                imagem: product.image,
-                                avaliacao: product.rating,
-                                reviews: product.reviews
-                            }));
-                            loadProducts();
-                        })
-                        .catch(err => {
-                            console.error('Erro ao carregar produtos:', err);
-                            showNotification('Erro ao carregar produtos.', 'error');
-                        });
-                });
+        // Carregar produtos: tenta Supabase client (client-side) -> API -> products.json
+        async function loadProductsFromDB() {
+            try {
+                let list = [];
+
+                if (window.SUPABASE_CLIENT) {
+                    try {
+                        const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*').order('created_at', { ascending: false });
+                        if (error) throw error;
+                        list = Array.isArray(data) ? data : [];
+                        console.log('[area_adm] loaded products directly from SUPABASE_CLIENT, count:', list.length);
+                    } catch (err) {
+                        console.warn('[area_adm] erro ao buscar direto no SUPABASE_CLIENT, fallback para API:', err.message || err);
+                    }
+                }
+
+                if (!list || list.length === 0) {
+                    // Try serverless API
+                    try {
+                        const resp = await fetch(API_BASE_URL + '/products?t=' + new Date().getTime());
+                        const payload = await resp.json();
+                        console.log('[area_adm] /api/products response payload:', payload);
+                        list = payload && payload.data ? payload.data : payload;
+                    } catch (err) {
+                        console.warn('[area_adm] erro ao buscar /api/products, fallback local:', err.message || err);
+                    }
+                }
+
+                if (!list || list.length === 0) {
+                    const r = await fetch('../../products.json?t=' + new Date().getTime());
+                    const data = await r.json();
+                    console.log('[area_adm] fallback products.json loaded, count:', Array.isArray(data) ? data.length : 0);
+                    list = data;
+                }
+
+                // Mapeia os campos do JSON (inglês) para os campos esperados (português)
+                products = (list || []).map(product => ({
+                    id: product.id,
+                    nome: product.name || product.nome,
+                    descricao: product.description || product.descricao || '',
+                    preco: Number(product.price || product.preco || 0),
+                    categoria: product.category || product.categoria,
+                    status: product.status || 'available',
+                    imagem: product.image || product.imagem || '',
+                    avaliacao: Number(product.rating || product.avaliacao || 0),
+                    reviews: Number(product.reviews || 0)
+                }));
+
+                loadProducts();
+            } catch (error) {
+                console.error('[area_adm] Erro ao carregar produtos:', error);
+                showNotification('Erro ao carregar produtos.', 'error');
+            }
         }
 
         // Show section

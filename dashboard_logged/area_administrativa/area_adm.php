@@ -532,6 +532,9 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+    <script src="/supabase-config.js"></script>
+
     <script>
         // Sample products data
         let products = [];
@@ -556,50 +559,56 @@
             'audio': '🎧'
         };
 
-        // Carregar produtos do products.json (mesmos produtos da home)
-        function loadProductsFromDB() {
-            // Carrega do mesmo arquivo JSON usado na home page
-            // Carregar produtos do Supabase via API (fallback para JSON local)
-            fetch(API_BASE_URL + '/products?t=' + new Date().getTime())
-                .then(response => response.json())
-                .then(payload => {
-                    const list = payload && payload.data ? payload.data : payload;
-                    products = list.map(product => ({
-                        id: product.id,
-                        nome: product.name || product.nome,
-                        descricao: product.description || product.descricao || '',
-                        preco: Number(product.price || product.preco || 0),
-                        categoria: product.category || product.categoria,
-                        status: product.status || 'available',
-                        imagem: product.image || product.imagem || '',
-                        avaliacao: Number(product.rating || product.avaliacao || 0),
-                        reviews: Number(product.reviews || 0)
-                    }));
-                    loadProducts();
-                })
-                .catch(error => {
-                    console.warn('Erro ao carregar via API, tentando arquivo local:', error);
-                    fetch('../../products.json?t=' + new Date().getTime())
-                        .then(r => r.json())
-                        .then(data => {
-                            products = data.map(product => ({
-                                id: product.id,
-                                nome: product.name,
-                                descricao: product.description,
-                                preco: product.price,
-                                categoria: product.category,
-                                status: product.status,
-                                imagem: product.image,
-                                avaliacao: product.rating,
-                                reviews: product.reviews
-                            }));
-                            loadProducts();
-                        })
-                        .catch(err => {
-                            console.error('Erro ao carregar produtos:', err);
-                            showNotification('Erro ao carregar produtos.', 'error');
-                        });
-                });
+        // Carregar produtos: tenta SUPABASE_CLIENT -> API -> products.json
+        async function loadProductsFromDB() {
+            try {
+                let list = [];
+
+                if (window.SUPABASE_CLIENT) {
+                    try {
+                        const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*').order('created_at', { ascending: false });
+                        if (error) throw error;
+                        list = Array.isArray(data) ? data : [];
+                        console.log('[area_adm.php] loaded products directly from SUPABASE_CLIENT, count:', list.length);
+                    } catch (err) {
+                        console.warn('[area_adm.php] erro ao buscar direto no SUPABASE_CLIENT, fallback para API:', err.message || err);
+                    }
+                }
+
+                if (!list || list.length === 0) {
+                    try {
+                        const resp = await fetch(API_BASE_URL + '/products?t=' + new Date().getTime());
+                        const payload = await resp.json();
+                        const list2 = payload && payload.data ? payload.data : payload;
+                        list = list2;
+                    } catch (err) {
+                        console.warn('[area_adm.php] erro ao buscar /api/products, fallback local:', err.message || err);
+                    }
+                }
+
+                if (!list || list.length === 0) {
+                    const r = await fetch('../../products.json?t=' + new Date().getTime());
+                    const data = await r.json();
+                    list = data;
+                }
+
+                products = (list || []).map(product => ({
+                    id: product.id,
+                    nome: product.name || product.nome,
+                    descricao: product.description || product.descricao || '',
+                    preco: Number(product.price || product.preco || 0),
+                    categoria: product.category || product.categoria,
+                    status: product.status || 'available',
+                    imagem: product.image || product.imagem || '',
+                    avaliacao: Number(product.rating || product.avaliacao || 0),
+                    reviews: Number(product.reviews || 0)
+                }));
+
+                loadProducts();
+            } catch (error) {
+                console.error('[area_adm.php] Erro ao carregar produtos:', error);
+                showNotification('Erro ao carregar produtos.', 'error');
+            }
         }
 
         // Show section

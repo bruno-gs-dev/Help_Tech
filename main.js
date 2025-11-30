@@ -24,22 +24,49 @@ const categoryNames = {
 // Função principal que inicia o sistema
 async function loadProducts() {
     try {
-        // Tenta carregar do endpoint API (Supabase). Se falhar, faz fallback para products.json
-        let response;
-        try {
-            response = await fetch('/api/products?t=' + new Date().getTime());
-        } catch (e) {
-            response = null;
-        }
+        // Primeiro tenta carregar diretamente do Supabase client (client-side) se estiver configurado
+        if (window.SUPABASE_CLIENT) {
+            try {
+                const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                products = Array.isArray(data) ? data : [];
+            } catch (e) {
+                console.warn('[main] erro ao buscar direto no Supabase client, tentando /api/products fallback:', e.message || e);
+                // fallback para endpoint serverless
+                let response;
+                try {
+                    response = await fetch('/api/products?t=' + new Date().getTime());
+                } catch (err) {
+                    response = null;
+                }
 
-        if (!response || !response.ok) {
-            // fallback para arquivo estático
-            const fallback = await fetch('products.json?t=' + new Date().getTime());
-            if (!fallback.ok) throw new Error('Não foi possível carregar os produtos do servidor nem do arquivo local');
-            products = await fallback.json();
+                if (!response || !response.ok) {
+                    // fallback para arquivo estático
+                    const fallback = await fetch('products.json?t=' + new Date().getTime());
+                    if (!fallback.ok) throw new Error('Não foi possível carregar os produtos do servidor nem do arquivo local');
+                    products = await fallback.json();
+                } else {
+                    const body = await response.json();
+                    products = body && body.data ? body.data : [];
+                }
+            }
         } else {
-            const body = await response.json();
-            products = body && body.data ? body.data : [];
+            // Sem cliente Supabase, usa API serverless e depois fallback local
+            let response;
+            try {
+                response = await fetch('/api/products?t=' + new Date().getTime());
+            } catch (e) {
+                response = null;
+            }
+
+            if (!response || !response.ok) {
+                const fallback = await fetch('products.json?t=' + new Date().getTime());
+                if (!fallback.ok) throw new Error('Não foi possível carregar os produtos do servidor nem do arquivo local');
+                products = await fallback.json();
+            } else {
+                const body = await response.json();
+                products = body && body.data ? body.data : [];
+            }
         }
 
         // Inicializa a lista filtrada com todos os produtos
