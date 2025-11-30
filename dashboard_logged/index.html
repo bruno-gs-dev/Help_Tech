@@ -97,7 +97,10 @@
                     <div class="relative">
                         <button id="profileButton" class="flex items-center focus:outline-none">
                             <img id="header-profile-img" src="./img/perfil_image.jpg" alt="Foto de perfil"
-                                class="w-12 h-12 rounded-full border-2 border-gray-200 hover:border-primary transition-all duration-200 cursor-pointer">
+                                class="w-12 h-12 rounded-full border-2 border-gray-200 hover:border-primary transition-all duration-200 cursor-pointer object-cover">
+                            <div id="header-profile-initial" class="hidden w-12 h-12 rounded-full border-2 border-gray-200 hover:border-primary transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold uppercase shadow-sm">
+                                <span>?</span>
+                            </div>
                         </button>
                         <div id="profileMenu"
                             class="hidden absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
@@ -141,18 +144,7 @@
                     </script>
                                         <script src="/shared/auth-ui.js"></script>
                                         <script>if (window.initAuthUI) initAuthUI();</script>
-                                        <script>
-                                            // Fallback: ensure header image is set from localStorage immediately
-                                            document.addEventListener('DOMContentLoaded', () => {
-                                                try {
-                                                    const s = JSON.parse(localStorage.getItem('user')) || null;
-                                                    const img = document.getElementById('header-profile-img');
-                                                    const profile = s && (s.profile || (s.user ? { metadata: { email: s.user.email }, id: s.user.id } : null));
-                                                    const url = profile && (profile.image || (profile.metadata && (profile.metadata.profile_pic || profile.metadata.image || profile.metadata.avatar || profile.metadata.picture)));
-                                                    if (img && url) img.src = url;
-                                                } catch (e) { /* ignore */ }
-                                            });
-                                        </script>
+                                        <script src="../shared/header_user.js"></script>
                     <!---->
                 </div>
             </div>
