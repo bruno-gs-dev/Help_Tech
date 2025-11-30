@@ -539,6 +539,9 @@
     <script src="/supabase-config.js"></script>
 
     <script>
+        // API base for serverless endpoints
+        const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api';
+
         // Sample products data
         let products = [];
 
@@ -682,7 +685,7 @@
 
         // Edit product
         function editProduct(id) {
-            const product = products.find(p => p.id === id);
+            const product = products.find(p => String(p.id) === String(id));
             if (!product) return;
 
             editingProductId = id;
@@ -704,13 +707,11 @@
         // Delete product
         function deleteProduct(id) {
             if (confirm('Tem certeza que deseja excluir este produto?')) {
-                const formData = new FormData();
-                formData.append('action', 'delete');
-                formData.append('id', id);
-
-                fetch('alterar_informacoes.php', {
+                const payload = { action: 'delete', id };
+                fetch(API_BASE_URL + '/alterar_informacoes', {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -773,9 +774,12 @@
             formData.append('descricao', document.getElementById('partnerDescription').value);
             formData.append('endereco', document.getElementById('partnerAddress').value);
 
-            fetch('alterar_informacoes.php', {
+            const bodyJson = {};
+            formData.forEach((v,k) => bodyJson[k]=v);
+            fetch(API_BASE_URL + '/alterar_informacoes', {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bodyJson)
             })
             .then(response => response.json())
             .then(data => {
@@ -861,9 +865,13 @@
                         formData.set('image', upJson.publicURL);
                     }
 
-                    const response = await fetch('alterar_informacoes.php', {
+                    // Send JSON to serverless API so it persists to Supabase
+                    const jsonBody = {};
+                    formData.forEach((v, k) => jsonBody[k] = v);
+                    const response = await fetch(API_BASE_URL + '/alterar_informacoes', {
                         method: 'POST',
-                        body: formData
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(jsonBody)
                     });
                     const data = await response.json();
                     if (data.success) {
