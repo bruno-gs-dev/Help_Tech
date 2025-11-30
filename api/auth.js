@@ -28,8 +28,12 @@ export default async function handler(req, res) {
     // LOGIN — try to authenticate against Supabase if possible
     if (action === 'login') {
         try {
-            const SUPABASE_URL = process.env.SUPABASE_URL;
-            const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+            // Fallbacks for testing (hardcoded). Replace in production.
+            const DEFAULT_SUPABASE_URL = 'https://ongzofvycmljqdjruvpv.supabase.co';
+            const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9uZ3pvZnZ5Y21sanFkanJ1dnB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NDcsImV4cCI6MjA3ODY5Nzc0N30.i8W1i-OHBqzZ4CpGFMfQVpdiFFhL8KKkYSYMd048PGA';
+
+            const SUPABASE_URL = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+            const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
             // If Supabase config available, call the token endpoint (grant_type=password)
             if (SUPABASE_URL && SUPABASE_ANON_KEY) {
@@ -86,8 +90,12 @@ export default async function handler(req, res) {
             if (!password) return badRequest('Senha é obrigatória');
             if (typeof password === 'string' && password.length < 6) return badRequest('Senha deve ter ao menos 6 caracteres');
             // If Supabase server-side keys are available, create the user in Supabase
-            const SUPABASE_URL = process.env.SUPABASE_URL;
-            const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            // Fallbacks for testing: prefer service role key from env, otherwise use anon key (may be limited)
+            const DEFAULT_SUPABASE_URL = 'https://ongzofvycmljqdjruvpv.supabase.co';
+            const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9uZ3pvZnZ5Y21sanFkanJ1dnB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NDcsImV4cCI6MjA3ODY5Nzc0N30.i8W1i-OHBqzZ4CpGFMfQVpdiFFhL8KKkYSYMd048PGA';
+
+            const SUPABASE_URL = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+            const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
             // Build a basic user metadata object if name is provided
             const user_metadata = {};
