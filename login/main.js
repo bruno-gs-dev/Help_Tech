@@ -1,4 +1,4 @@
-// Minimal Login Form JavaScript
+// Minimal Login Form JavaScript (Firebase Auth)
 class MinimalLoginForm {
     constructor() {
         this.form = document.getElementById('loginForm');
@@ -102,68 +102,33 @@ class MinimalLoginForm {
         this.setLoading(true);
 
         try {
-            // If a Supabase client is available (create `supabase-config.js` from the example), use it
-            if (window.SUPABASE_CLIENT && window.SUPABASE_CLIENT.auth) {
-                const { data, error } = await window.SUPABASE_CLIENT.auth.signInWithPassword({
-                    email: this.emailInput.value,
-                    password: this.passwordInput.value
-                });
-
-                if (error) {
-                    this.showError('password', error.message || 'Login failed.');
-                } else {
-                    // Save user/session for compatibility and fetch profile
-                    try {
-                        const session = data.session || null;
-                        const user = data.user || (session ? session.user : null);
-                        if (session) localStorage.setItem('supabase.session', JSON.stringify(session));
-
-                        let profile = null;
-                        if (user && window.SUPABASE_CLIENT) {
-                            const { data: p, error: pErr } = await window.SUPABASE_CLIENT
-                                .from('profiles')
-                                .select('id,username,full_name,role,is_admin,metadata')
-                                .eq('id', user.id)
-                                .single();
-                            if (!pErr) profile = p; else console.warn('Profile fetch error:', pErr);
-                        }
-
-                        const store = { user, profile, session };
-                        localStorage.setItem('user', JSON.stringify(store));
-                    } catch (e) { console.warn('Error saving session/profile', e); }
-
-                    this.showSuccess();
-                }
-            } else {
-                // Fallback: use existing server-side auth endpoint
-                const API_BASE_URL = window.location.hostname === 'localhost'
-                    ? 'http://localhost:3000/api'
-                    : '/api';
-
-                const response = await fetch(`${API_BASE_URL}/auth`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'login',
-                        email: this.emailInput.value,
-                        password: this.passwordInput.value
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    localStorage.setItem('user', JSON.stringify(data.data));
-                    this.showSuccess();
-                } else {
-                    this.showError('password', data.message || 'Login failed. Please try again.');
-                }
+            // Firebase sign-in
+            if (!window.firebase || !firebase.auth) {
+                throw new Error('Firebase não inicializado. Verifique firebase-init.');
             }
+            const email = this.emailInput.value.trim();
+            const password = this.passwordInput.value;
+            const { user } = await firebase.auth().signInWithEmailAndPassword(email, password);
+            const idToken = await user.getIdToken();
+
+            // Upsert profile via server endpoint (protected by Firebase token)
+            const upsertResp = await fetch('/api/upsert_profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ username: email.split('@')[0], full_name: '', metadata: {} })
+            });
+            const upsertData = await upsertResp.json();
+            if (!upsertResp.ok || !upsertData.success) {
+                throw new Error(upsertData.message || 'Falha ao sincronizar perfil');
+            }
+
+            // Save session locally
+            const session = { user: { uid: user.uid, email: user.email }, profile: upsertData.data?.profile?.[0] || null };
+            localStorage.setItem('session', JSON.stringify(session));
+            this.showSuccess();
         } catch (error) {
             console.error('Login error:', error);
-            this.showError('password', 'An error occurred. Please try again later.');
+            this.showError('password', 'Falha no login: ' + error.message);
         } finally {
             this.setLoading(false);
         }
