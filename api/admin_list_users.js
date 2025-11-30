@@ -1,0 +1,60 @@
+// Serverless endpoint to list Supabase users using the Service Role Key
+// Usage: GET /api/admin_list_users
+
+export default async function handler(req, res) {
+    // Allow simple CORS for testing from browser/dev
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'GET') return res.status(405).json({ success: false, message: 'Método não permitido' });
+
+    try {
+        const SUPABASE_URL = process.env.SUPABASE_URL;
+        const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+            return res.status(500).json({ success: false, message: 'SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY não configurados no servidor' });
+        }
+
+        // Ensure fetch exists (Node <18)
+        if (typeof fetch === 'undefined') {
+            try {
+                const nodeFetch = await import('node-fetch');
+                global.fetch = nodeFetch.default || nodeFetch;
+            } catch (e) {
+                console.error('fetch not available and node-fetch import failed', e);
+                return res.status(500).json({ success: false, message: 'Fetch não disponível no servidor' });
+            }
+        }
+
+        const adminUrl = `${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/admin/users?limit=200`;
+
+        const resp = await fetch(adminUrl, {
+            method: 'GET',
+            headers: {
+                apikey: SUPABASE_SERVICE_ROLE_KEY,
+                Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+        });
+
+        const text = await resp.text();
+        let body = null;
+        try { body = text ? JSON.parse(text) : null; } catch (e) { body = text; }
+
+        if (!resp.ok) {
+            console.error('admin_list_users error', resp.status, body);
+            if (resp.status === 403 && body && body.error_code === 'not_admin') {
+                return res.status(403).json({ success: false, message: 'Chave não é Service Role Key (not_admin)', status: resp.status, error: body, hint: 'Defina SUPABASE_SERVICE_ROLE_KEY com a Service Role Key (Dashboard → Settings → API → Service Role Key) no Vercel Environment Variables' });
+            }
+
+            return res.status(500).json({ success: false, message: 'Erro ao chamar Supabase admin API', status: resp.status, error: body });
+        }
+
+        return res.status(200).json({ success: true, data: body });
+    } catch (error) {
+        console.error('admin_list_users exception', error);
+        return res.status(500).json({ success: false, message: 'Erro interno', error: error.message });
+    }
+}
