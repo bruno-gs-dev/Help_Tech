@@ -243,56 +243,86 @@
         }
       }
 
-      // Prefer profile.id (already fetched at login), otherwise fall back to auth user id
-      const userId = (store && store.profile && store.profile.id)
-        ? store.profile.id
-        : (store && store.user && (store.user.id || store.user.uid) ? (store.user.id || store.user.uid) : null);
+      // Build a list of candidate identifiers to try against the profiles table
+      const candidates = [];
+      if (store && store.profile) {
+        candidates.push(store.profile.id || null);
+        candidates.push(store.profile.user_id || null);
+        candidates.push(store.profile.uid || null);
+        // Some apps store identity under different keys in metadata
+        if (store.profile.metadata) {
+          candidates.push(store.profile.metadata.user_id || null);
+          candidates.push(store.profile.metadata.sub || null);
+        }
+      }
+      if (store && store.user) {
+        candidates.push(store.user.id || null);
+        candidates.push(store.user.uid || null);
+        // email may be useful if profiles.id stores email (less common)
+        candidates.push(store.user.email || null);
+      }
 
-      console.log('Fetching profile for userId=', userId);
+      // Remove duplicates and nulls
+      const uniqueCandidates = Array.from(new Set(candidates.filter(Boolean)));
+      console.log('Attempting profile fetch with candidates:', uniqueCandidates);
 
-      fetch(`${API_BASE_URL}/capturar_informacoes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ action: 'user-info', userId })
-      })
-        .then(response => response.json())
-        .then(data => {
-          console.log('capturar_informacoes response:', data);
-          if (data.success) {
-            const usuario = data.data;
-
-            // Atualizar informações de exibição
-            document.getElementById('display-name').textContent = usuario.name || document.getElementById('display-name').textContent;
-            document.getElementById('display-email').textContent = usuario.email || document.getElementById('display-email').textContent;
-            document.getElementById('display-phone').textContent = usuario.phone || document.getElementById('display-phone').textContent;
-            if (usuario.birthdate) document.getElementById('display-birthdate').textContent = formatDate(usuario.birthdate);
-
-            // Atualizar imagem ou inicial
-            if (usuario.image) {
-              const imgEl = document.getElementById('profile-image');
-              imgEl.src = usuario.image;
-              imgEl.classList.remove('hidden');
-              document.getElementById('profile-initial').classList.add('hidden');
+      // Helper: try each candidate sequentially until one returns success
+      async function tryFetchCandidates(list) {
+        for (const candidate of list) {
+          console.log('Trying candidate id ->', candidate);
+          try {
+            const resp = await fetch(`${API_BASE_URL}/capturar_informacoes`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'user-info', userId: candidate })
+            });
+            const json = await resp.json().catch(() => null);
+            console.log('Response for', candidate, json);
+            if (json && json.success && json.data) {
+              return { source: candidate, usuario: json.data };
             }
-
-            // Atualizar formulário - converte Y-m-d para DD/MM/YYYY
-            if (usuario.name) document.getElementById('name').value = usuario.name;
-            if (usuario.email) document.getElementById('email').value = usuario.email;
-            if (usuario.phone) document.getElementById('phone').value = usuario.phone;
-            if (usuario.birthdate) document.getElementById('birthdate').value = formatDate(usuario.birthdate);
-
-            console.log('Informações carregadas do servidor:', usuario);
-          } else {
-            console.error('Erro ao carregar informações:', data.message);
-            showNotification('Erro ao carregar informações do perfil.', 'error');
+            // if 404 or not found, continue to next candidate
+          } catch (err) {
+            console.warn('Fetch error for candidate', candidate, err);
           }
-        })
-        .catch(error => {
-          console.error('Erro:', error);
-          showNotification('Erro ao conectar com o servidor.', 'error');
-        });
+        }
+        return null;
+      }
+
+      // Run attempts and apply result if found
+      tryFetchCandidates(uniqueCandidates).then(result => {
+        if (!result) {
+          console.warn('No profile found for any candidate');
+          showNotification('Perfil não encontrado. Verifique o cadastro.', 'error');
+          return;
+        }
+
+        console.log('Selected profile source:', result.source, result.usuario);
+        const usuario = result.usuario;
+
+        // Atualizar informações de exibição
+        document.getElementById('display-name').textContent = usuario.name || document.getElementById('display-name').textContent;
+        document.getElementById('display-email').textContent = usuario.email || document.getElementById('display-email').textContent;
+        document.getElementById('display-phone').textContent = usuario.phone || document.getElementById('display-phone').textContent;
+        if (usuario.birthdate) document.getElementById('display-birthdate').textContent = formatDate(usuario.birthdate);
+
+        // Atualizar imagem
+        if (usuario.image) {
+          const imgEl = document.getElementById('profile-image');
+          imgEl.src = usuario.image;
+          imgEl.classList.remove('hidden');
+          document.getElementById('profile-initial').classList.add('hidden');
+        }
+
+        // Atualizar formulário
+        if (usuario.name) document.getElementById('name').value = usuario.name;
+        if (usuario.email) document.getElementById('email').value = usuario.email;
+        if (usuario.phone) document.getElementById('phone').value = usuario.phone;
+        if (usuario.birthdate) document.getElementById('birthdate').value = formatDate(usuario.birthdate);
+      }).catch(err => {
+        console.error('Error running candidate fetches', err);
+        showNotification('Erro ao conectar com o servidor.', 'error');
+      });
     }
 
     // Converter data para DD/MM/YYYY
