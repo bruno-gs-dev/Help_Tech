@@ -169,6 +169,46 @@ export default async function handler(req, res) {
                     });
                 }
 
+                // After creating the auth user, try to create a corresponding profile row
+                try {
+                    const createdUser = result && typeof result === 'object' ? result : null;
+                    const newUserId = createdUser && (createdUser.id || createdUser.user_id) ? (createdUser.id || createdUser.user_id) : null;
+                    if (newUserId) {
+                        const username = (email && email.split && email.split('@') && email.split('@')[0]) ? email.split('@')[0] : null;
+                        const profilePayload = [{
+                            id: newUserId,
+                            username: username,
+                            full_name: name || null,
+                            user_id: newUserId,
+                            metadata: { email: email },
+                            role: 'authenticated',
+                            is_admin: false
+                        }];
+
+                        const restUrl = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/profiles?on_conflict=id`;
+                        const profileResp = await fetch(restUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'apikey': SUPABASE_SERVICE_ROLE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                                'Prefer': 'return=representation'
+                            },
+                            body: JSON.stringify(profilePayload)
+                        });
+
+                        let profileResult = null;
+                        try { profileResult = profileResp.ok ? await profileResp.json() : await profileResp.text(); } catch (e) { profileResult = null; }
+                        if (!profileResp.ok) {
+                            console.warn('Failed to create profile row after user creation', profileResp.status, profileResult);
+                        } else {
+                            console.log('Profile row created/updated for user', newUserId);
+                        }
+                    }
+                } catch (profileErr) {
+                    console.warn('Error while creating profile after auth user creation', profileErr);
+                }
+
                 return res.status(201).json({ success: true, message: 'Usuário registrado no Supabase com sucesso', data: result });
             }
 

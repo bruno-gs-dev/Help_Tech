@@ -29,6 +29,17 @@
         const headerImg = document.getElementById('header-profile-img');
         if (headerImg && imgUrl) headerImg.src = imgUrl;
 
+        // Hide or show admin-only elements based on profile.is_admin
+        try {
+          const isAdmin = !!(profile && (profile.is_admin === true || profile.role === 'admin'));
+          const adminOnly = document.querySelectorAll('[data-requires-admin]');
+          if (adminOnly && adminOnly.length) {
+            adminOnly.forEach(el => {
+              try { el.style.display = isAdmin ? '' : 'none'; } catch (e) { }
+            });
+          }
+        } catch (e) { /* ignore */ }
+
         // Admin area header
         const adminImg = document.getElementById('admin-profile-img');
         const adminName = document.getElementById('admin-name');
