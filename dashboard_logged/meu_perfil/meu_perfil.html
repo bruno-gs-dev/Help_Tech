@@ -298,7 +298,25 @@
       tryFetchCandidates(uniqueCandidates).then(result => {
         if (!result) {
           console.warn('No profile found for any candidate');
-          showNotification('Perfil não encontrado. Verifique o cadastro.', 'error');
+          showNotification('Perfil não encontrado. Verificando possíveis correspondências...', 'error');
+
+          // Call server-side debug endpoint to get more info
+          fetch(`${API_BASE_URL}/debug_profile_lookup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ candidates: uniqueCandidates })
+          })
+            .then(r => r.json())
+            .then(debugData => {
+              console.log('debug_profile_lookup result:', debugData);
+              if (debugData && debugData.success && Array.isArray(debugData.results)) {
+                const messages = debugData.results.map(r => {
+                  if (!r.matches || r.matches.length === 0) return `${r.candidate}: no match`;
+                  return `${r.candidate}: matched by ${r.matches.map(m => m.method).join(', ')}`;
+                });
+                showNotification('Debug: ' + messages.join(' | '), 'error');
+              }
+            }).catch(e => console.warn('debug lookup failed', e));
           return;
         }
 
