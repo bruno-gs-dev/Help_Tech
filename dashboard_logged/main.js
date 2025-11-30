@@ -291,7 +291,8 @@
             
             else 
             {
-                const categoryTotal = products.filter(p => p.category === currentCategory).length;
+                const baseProducts = isLoggedIn() ? products : products.filter(p => p.status === 'available');
+                const categoryTotal = baseProducts.filter(p => p.category === currentCategory).length;
                 resultsCount.textContent = `Mostrando ${filteredProducts.length} de ${categoryTotal} produtos em ${categoryNames[currentCategory]}`;
             }
 
@@ -547,7 +548,10 @@
             const selectedCategories = Array.from(document.querySelectorAll('input[type="checkbox"][id^="cat-"]:checked')).map(cb => cb.value).filter(Boolean);
             const selectedStatus = Array.from(document.querySelectorAll('input[type="checkbox"][id^="status-"]:checked')).map(cb => cb.value).filter(Boolean);
 
-            filteredProducts = products.filter(product => 
+            // Base de produtos depende do estado de login
+            const baseProducts = isLoggedIn() ? products : products.filter(p => p.status === 'available');
+
+            filteredProducts = baseProducts.filter(product => 
             {
                 const matchesSearch = product.name.toLowerCase().includes(searchTerm) || product.description.toLowerCase().includes(searchTerm);
                 
@@ -593,6 +597,7 @@
         // Event listeners para filtros em tempo real
         document.addEventListener('DOMContentLoaded', () => 
         {
+            updateDisplayedProducts();
             renderProducts();
             
             setTimeout(() => 
@@ -641,6 +646,23 @@
                 }
             });
         });
+        
+        // Atualiza exibição quando outro _tab_ altera o estado de login via localStorage
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'user') {
+                updateDisplayedProducts();
+                filterProducts();
+                renderProducts();
+            }
+        });
+
+        // Chamar essa função após login/logout no mesmo tab para atualizar a UI
+        function notifyLoginStateChange() {
+            updateDisplayedProducts();
+            filterProducts();
+            renderProducts();
+        }
+        window.notifyLoginStateChange = notifyLoginStateChange;
     // Inicializar quantidades e períodos
         products.forEach(product => 
         {
