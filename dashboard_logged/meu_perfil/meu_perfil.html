@@ -192,12 +192,20 @@
 
     // Função para carregar informações do banco de dados
     function carregarInformacoesUsuario() {
+      // Read logged user from localStorage
+      let store = null;
+      try {
+        store = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('supabase.session')) || null;
+      } catch (e) { store = null; }
+
+      const userId = (store && store.user && (store.user.id || store.user.uid)) ? (store.user.id || store.user.uid) : null;
+
       fetch(`${API_BASE_URL}/capturar_informacoes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ action: 'user-info' })
+        body: JSON.stringify({ action: 'user-info', userId })
       })
         .then(response => response.json())
         .then(data => {

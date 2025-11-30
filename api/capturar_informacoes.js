@@ -1,6 +1,8 @@
 // Serverless Function para capturar informações
 // Substitui: dashboard_logged/area_administrativa/capturar_informacoes.php
 
+import { createClient } from '@supabase/supabase-js';
+
 export default async function handler(req, res) {
     // Configurar CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -38,6 +40,46 @@ export default async function handler(req, res) {
                 success: true,
                 data: partnerData
             });
+        }
+
+        // OBTER INFORMAÇÕES DO USUÁRIO (profiles)
+        if (action === 'user-info') {
+            // Accept userId from client (frontend should send it)
+            const userId = req.body.userId || null;
+
+            // Setup Supabase client (use service role key when available, fallback to anon key for testing)
+            const DEFAULT_SUPABASE_URL = 'https://ongzofvycmljqdjruvpv.supabase.co';
+            const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9uZ3pvZnZ5Y21sanFkanJ1dnB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMjE3NDcsImV4cCI6MjA3ODY5Nzc0N30.i8W1i-OHBqzZ4CpGFMfQVpdiFFhL8KKkYSYMd048PGA';
+            const SUPABASE_URL = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+            const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+
+            const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            try {
+                if (!userId) {
+                    return res.status(400).json({ success: false, message: 'userId não fornecido' });
+                }
+
+                const { data, error } = await supabase.from('profiles').select('id,username,full_name,role,is_admin,metadata').eq('id', userId).single();
+                if (error) {
+                    console.error('Erro ao buscar profile:', error);
+                    return res.status(500).json({ success: false, message: 'Erro ao buscar perfil', error: error.message });
+                }
+
+                // Map profile fields to expected response shape
+                const usuario = {
+                    id: data.id,
+                    name: data.full_name || data.username || null,
+                    email: (data.metadata && data.metadata.email) || null,
+                    phone: (data.metadata && data.metadata.phone) || null,
+                    birthdate: (data.metadata && data.metadata.birthdate) || null
+                };
+
+                return res.status(200).json({ success: true, data: usuario });
+            } catch (err) {
+                console.error('capturar_informacoes user-info exception', err);
+                return res.status(500).json({ success: false, message: 'Erro interno', error: err.message });
+            }
         }
 
         return res.status(400).json({
