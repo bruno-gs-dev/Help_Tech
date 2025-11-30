@@ -102,33 +102,47 @@ class MinimalLoginForm {
         this.setLoading(true);
 
         try {
-            // Firebase sign-in
-            if (!window.firebase || !firebase.auth) {
-                throw new Error('Firebase não inicializado. Verifique firebase-init.');
+            // Use Supabase client for authentication
+            if (!window.SUPABASE_CLIENT || !window.SUPABASE_CLIENT.auth) {
+                throw new Error('Supabase client não inicializado. Copie shared/supabase-config.example.js para shared/supabase-config.js e preencha os valores.');
             }
+
             const email = this.emailInput.value.trim();
             const password = this.passwordInput.value;
-            const { user } = await firebase.auth().signInWithEmailAndPassword(email, password);
-            const idToken = await user.getIdToken();
 
-            // Upsert profile via server endpoint (protected by Firebase token)
-            const upsertResp = await fetch('/api/upsert_profile', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
-                body: JSON.stringify({ username: email.split('@')[0], full_name: '', metadata: {} })
+            const { data, error } = await window.SUPABASE_CLIENT.auth.signInWithPassword({
+                email,
+                password
             });
-            const upsertData = await upsertResp.json();
-            if (!upsertResp.ok || !upsertData.success) {
-                throw new Error(upsertData.message || 'Falha ao sincronizar perfil');
-            }
 
-            // Save session locally
-            const session = { user: { uid: user.uid, email: user.email }, profile: upsertData.data?.profile?.[0] || null };
-            localStorage.setItem('session', JSON.stringify(session));
-            this.showSuccess();
+            if (error) {
+                this.showError('password', error.message || 'Falha ao autenticar');
+            } else {
+                // Save user/session and fetch profile
+                try {
+                    const session = data.session || null;
+                    const user = data.user || (session ? session.user : null);
+                    if (session) localStorage.setItem('supabase.session', JSON.stringify(session));
+
+                    let profile = null;
+                    if (user && window.SUPABASE_CLIENT) {
+                        const { data: p, error: pErr } = await window.SUPABASE_CLIENT
+                            .from('profiles')
+                            .select('id,username,full_name,role,is_admin,metadata')
+                            .eq('id', user.id)
+                            .single();
+                        if (!pErr) profile = p; else console.warn('Profile fetch error:', pErr);
+                    }
+
+                    const store = { user, profile, session };
+                    localStorage.setItem('user', JSON.stringify(store));
+                } catch (e) { console.warn('Error saving session/profile', e); }
+
+                this.showSuccess();
+            }
         } catch (error) {
             console.error('Login error:', error);
-            this.showError('password', 'Falha no login: ' + error.message);
+            this.showError('password', 'An error occurred. Please try again later.');
         } finally {
             this.setLoading(false);
         }

@@ -66,14 +66,16 @@
         </div>
     </div>
 
-    <script src="../../shared/js/form-utils.js"></script>
-        <!-- Firebase SDK (compat) -->
-        <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-        <!-- Firebase config (copy example to real config) -->
-        <script src="../../shared/firebase-config.js"></script>
+        <script src="../../shared/js/form-utils.js"></script>
+        <!-- Supabase JS (UMD) -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+        <!-- Supabase config: copy shared/supabase-config.example.js to shared/supabase-config.js and fill values -->
+        <script src="../../shared/supabase-config.js"></script>
         <script>
-            if (window.FIREBASE_CONFIG) { firebase.initializeApp(window.FIREBASE_CONFIG); }
+            if (window.SUPABASE_CONFIG && window.supabase) {
+                // create global client for other scripts
+                window.SUPABASE_CLIENT = supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+            }
         </script>
     <script src="./main.js"></script>
 </body>
