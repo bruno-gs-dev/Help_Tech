@@ -221,6 +221,7 @@
       console.log('carregarInformacoesUsuario - local store:', store);
 
       // If we have a profile cached locally, populate the UI immediately as a fallback
+      let appliedCachedProfile = false;
       if (store && store.profile) {
         try {
           const cached = store.profile;
@@ -258,6 +259,7 @@
 
           // Set current profile id for update/delete actions
           CURRENT_PROFILE_ID = cached.id || (store && store.user && (store.user.id || store.user.uid)) || null;
+          appliedCachedProfile = true;
         } catch (e) {
           console.warn('Error applying cached profile to UI', e);
         }
@@ -356,6 +358,12 @@
       // Run attempts and apply result if found
       tryFetchCandidates(uniqueCandidates).then(result => {
         if (!result) {
+          // If we already applied a cached profile, don't show the "not found" debug notification.
+          if (appliedCachedProfile) {
+            console.log('Profile displayed from cache; skipping debug lookup and notification');
+            return;
+          }
+
           console.warn('No profile found for any candidate');
           showNotification('Perfil não encontrado. Verificando possíveis correspondências...', 'error');
 
@@ -495,6 +503,13 @@
                     try { window.dispatchEvent(new Event('profile-updated')); } catch (e) { }
                   }
                 } catch (e) { console.warn('Error syncing local profile after client upsert', e); }
+                // Also update header profile image if present
+                try {
+                  const headerImg = document.getElementById('header-profile-img');
+                  const pageImg = document.getElementById('profile-image');
+                  const newImgUrl = (upData && (upData.image || (upData.metadata && (upData.metadata.profile_pic || upData.metadata.image || upData.metadata.avatar)))) || (payload && (payload.image || (payload.metadata && (payload.metadata.profile_pic || payload.metadata.image || payload.metadata.avatar)))) || (pageImg && pageImg.src) || null;
+                  if (headerImg && newImgUrl) headerImg.src = newImgUrl;
+                } catch (e) { /* ignore */ }
                 return;
               }
             }
@@ -532,6 +547,13 @@
                 try { window.dispatchEvent(new Event('profile-updated')); } catch (e) { }
               }
             } catch (e) { console.warn('Error syncing local profile after server save', e); }
+            // Update header image to match page profile image if available
+            try {
+              const headerImg = document.getElementById('header-profile-img');
+              const pageImg = document.getElementById('profile-image');
+              const pageSrc = pageImg && pageImg.src ? pageImg.src : null;
+              if (headerImg && pageSrc) headerImg.src = pageSrc;
+            } catch (e) { /* ignore */ }
           } else {
             showNotification(data.message || 'Falha ao salvar perfil', 'error');
           }
