@@ -97,6 +97,9 @@
             }
         ];
 
+    // Fallback image (inline SVG) para quando não houver imagem
+    const IMAGE_FALLBACK = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+';
+
         let cart = [];
         let filteredProducts = [...products];
         let currentSort = 'relevance';
@@ -291,9 +294,9 @@
                 const productCard = `
                     <div class="product-card bg-white rounded-2xl p-6 transition-all duration-300 cursor-pointer border border-gray-100 relative overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:border-transparent">
                         <div class="w-full h-48 overflow-hidden flex items-center justify-center mb-4 relative rounded-xl bg-gray-50">
-                            <img src="${product.image}" alt="${product.name}" 
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'" 
-                                 class="w-full h-full object-contain transition-transform duration-300 hover:scale-105">
+                               <img src="${product.image || IMAGE_FALLBACK}" alt="${product.name}" 
+                                   onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+' 
+                                   class="w-full h-full object-contain transition-transform duration-300 hover:scale-105">
                             <span class="product-badge absolute top-3 right-3 px-3 py-1 rounded-xl text-xs font-semibold uppercase glass-light border ${badgeClass}">${badgeText}</span>
                         </div>
                         <h2 class="text-base font-semibold text-gray-800 mb-3 leading-5 transition-colors duration-200 hover:text-primary">${product.name}</h2>

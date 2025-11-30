@@ -647,7 +647,7 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <img src="${product.imagem}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover">
+                                <img src="${product.imagem || IMAGE_FALLBACK}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null;this.src='${IMAGE_FALLBACK}'">
                                 <div>
                                     <div class="font-semibold text-gray-800 text-sm">${product.nome}</div>
                                     <div class="text-xs text-gray-500">Produto ID: ${product.id}</div>
