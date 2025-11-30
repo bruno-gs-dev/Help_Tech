@@ -20,6 +20,11 @@ export default async function handler(req, res) {
 
     const { action, email, password, name } = req.body;
 
+    // Basic input validation for register
+    function badRequest(msg) {
+        return res.status(400).json({ success: false, message: msg });
+    }
+
     // LOGIN (keeps existing behavior: this endpoint is a fallback)
     if (action === 'login') {
         try {
@@ -52,6 +57,9 @@ export default async function handler(req, res) {
     // REGISTRO
     if (action === 'register') {
         try {
+            if (!email) return badRequest('Email é obrigatório');
+            if (!password) return badRequest('Senha é obrigatória');
+            if (typeof password === 'string' && password.length < 6) return badRequest('Senha deve ter ao menos 6 caracteres');
             // If Supabase server-side keys are available, create the user in Supabase
             const SUPABASE_URL = process.env.SUPABASE_URL;
             const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -63,6 +71,18 @@ export default async function handler(req, res) {
             if (req.body.last_name) user_metadata.last_name = req.body.last_name;
 
             if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+                // Ensure fetch is available (Node <18 environments)
+                if (typeof fetch === 'undefined') {
+                    try {
+                        // eslint-disable-next-line global-require
+                        const nodeFetch = await import('node-fetch');
+                        // node-fetch exports default
+                        global.fetch = nodeFetch.default || nodeFetch;
+                    } catch (e) {
+                        console.error('fetch is not available and node-fetch could not be imported', e);
+                        return res.status(500).json({ success: false, message: 'Erro interno: fetch não disponível no servidor' });
+                    }
+                }
                 // Use the Admin REST API to create the user
                 const adminUrl = `${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/admin/users`;
 
@@ -83,10 +103,26 @@ export default async function handler(req, res) {
                     body: JSON.stringify(payload)
                 });
 
-                const result = await resp.json();
+                let resultText = null;
+                let result = null;
+                try {
+                    resultText = await resp.text();
+                    // Try parse JSON
+                    result = resultText ? JSON.parse(resultText) : null;
+                } catch (e) {
+                    // not JSON
+                    result = resultText;
+                }
+
                 if (!resp.ok) {
-                    console.error('Supabase admin create user error:', result);
-                    return res.status(500).json({ success: false, message: 'Erro ao criar usuário no Supabase', error: result });
+                    console.error('Supabase admin create user error', resp.status, result);
+                    // Return the status and API message if possible
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Erro ao criar usuário no Supabase',
+                        status: resp.status,
+                        error: result
+                    });
                 }
 
                 return res.status(201).json({ success: true, message: 'Usuário registrado no Supabase com sucesso', data: result });
