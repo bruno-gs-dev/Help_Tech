@@ -16,7 +16,12 @@
         const profile = s && (s.profile || (s.user ? { id: s.user.id, metadata: { email: s.user.email } } : null));
         if (!profile) return;
 
-        const imgUrl = profile.image || (profile.metadata && (profile.metadata.profile_pic || profile.metadata.image || profile.metadata.avatar)) || null;
+        // Accept many possible image keys used across apps
+        const imgUrl = profile.image
+          || (profile.metadata && (profile.metadata.profile_pic || profile.metadata.image || profile.metadata.avatar || profile.metadata.picture || profile.metadata.avatar_url || profile.metadata.picture_url))
+          || profile.avatar
+          || profile.picture
+          || null;
         const displayName = profile.full_name || profile.username || (s && s.user && s.user.email) || '';
         const displayEmail = (profile.metadata && profile.metadata.email) || (s && s.user && s.user.email) || '';
 
@@ -37,6 +42,12 @@
         // ignore errors silently
         console.warn('AUTH_UI applyFromStore error', err);
       }
+    },
+
+    // Listen for programmatic updates inside the same tab
+    _listenForUpdates() {
+      window.addEventListener('profile-updated', () => this.applyFromStore());
+      // storage events are already handled in init
     },
 
     getCurrentUser() {
@@ -68,3 +79,4 @@
   window.AUTH_UI = AUTH_UI;
   window.initAuthUI = function () { AUTH_UI.init(); };
 })();
+

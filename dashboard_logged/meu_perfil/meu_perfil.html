@@ -397,31 +397,67 @@
         return;
       }
 
-      // Faz a requisição para a API
-      fetch(`${API_BASE_URL}/alterar_informacoes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'update-user',
-          userId: userIdForUpdate,
-          name: name,
-          email: email,
-          phone: phone,
-          birthdate: birthdate
-        })
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            showNotification(data.message, 'success');
-            // Atualizar a exibição
+      // First, try a client-side Supabase upsert if client is available and authenticated
+      (async function tryClientUpsert() {
+        try {
+          if (window.SUPABASE_CLIENT && window.SUPABASE_CLIENT.auth) {
+            // Ensure we have a logged user
+            let store = null;
+            try { store = JSON.parse(localStorage.getItem('user')) || null; } catch (e) { store = null; }
+            const authUserId = store && store.user && (store.user.id || store.user.uid) ? (store.user.id || store.user.uid) : null;
+            const targetId = userIdForUpdate || authUserId;
+            if (targetId) {
+              const payload = {
+                id: targetId,
+                full_name: name || null,
+                metadata: {
+                  ...(store && store.profile && store.profile.metadata ? store.profile.metadata : {}),
+                  email: email || undefined,
+                  phone: phone || undefined,
+                  birthdate: birthdate && birthdate.includes('/') ? parseDateToISO(birthdate) : birthdate || undefined
+                }
+              };
+
+              // Use upsert so it creates or updates the profile row for this authenticated user
+              const { data: upData, error: upErr } = await window.SUPABASE_CLIENT.from('profiles').upsert(payload, { returning: 'representation' }).select().maybeSingle();
+              if (!upErr && upData) {
+                showNotification('Perfil atualizado com sucesso', 'success');
+                // Update UI and localStorage
+                document.getElementById('display-name').textContent = name;
+                document.getElementById('display-email').textContent = email;
+                document.getElementById('display-phone').textContent = phone;
+                document.getElementById('display-birthdate').textContent = birthdate;
+                try {
+                  const s = JSON.parse(localStorage.getItem('user')) || {};
+                  s.profile = Object.assign(s.profile || {}, upData || payload);
+                  localStorage.setItem('user', JSON.stringify(s));
+                  if (window.AUTH_UI && typeof AUTH_UI.syncProfile === 'function') {
+                    AUTH_UI.syncProfile(s.profile);
+                    try { window.dispatchEvent(new Event('profile-updated')); } catch (e) { }
+                  }
+                } catch (e) { console.warn('Error syncing local profile after client upsert', e); }
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Client upsert failed, falling back to server:', e);
+        }
+
+        // Fallback to server endpoint
+        try {
+          const resp = await fetch(`${API_BASE_URL}/alterar_informacoes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update-user', userId: userIdForUpdate, name, email, phone, birthdate })
+          });
+          const data = await resp.json().catch(() => ({ success: false, message: 'Invalid response' }));
+          if (data && data.success) {
+            showNotification(data.message || 'Perfil atualizado', 'success');
             document.getElementById('display-name').textContent = name;
             document.getElementById('display-email').textContent = email;
             document.getElementById('display-phone').textContent = phone;
             document.getElementById('display-birthdate').textContent = birthdate;
-            // Keep localStorage in sync and update header via AUTH_UI
             try {
               const s = JSON.parse(localStorage.getItem('user')) || {};
               s.profile = s.profile || {};
@@ -432,18 +468,19 @@
               s.profile.metadata.phone = phone;
               s.profile.metadata.birthdate = birthdate && birthdate.includes('/') ? parseDateToISO(birthdate) : birthdate;
               localStorage.setItem('user', JSON.stringify(s));
-              if (window.AUTH_UI && typeof AUTH_UI.syncProfile === 'function') AUTH_UI.syncProfile(s.profile);
-            } catch (e) {
-              console.warn('Error syncing local profile after save', e);
-            }
+              if (window.AUTH_UI && typeof AUTH_UI.syncProfile === 'function') {
+                AUTH_UI.syncProfile(s.profile);
+                try { window.dispatchEvent(new Event('profile-updated')); } catch (e) { }
+              }
+            } catch (e) { console.warn('Error syncing local profile after server save', e); }
           } else {
-            showNotification(data.message, 'error');
+            showNotification(data.message || 'Falha ao salvar perfil', 'error');
           }
-        })
-        .catch(error => {
-          console.error('Erro:', error);
+        } catch (err) {
+          console.error('Erro:', err);
           showNotification('Erro ao tentar salvar as alterações. Tente novamente.', 'error');
-        });
+        }
+      })();
     });
 
     // Excluir conta com requisição ao PHP

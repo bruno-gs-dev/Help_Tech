@@ -139,8 +139,20 @@
                             window.location.href = '../index.html';
                         }
                     </script>
-                    <script src="/shared/auth-ui.js"></script>
-                    <script>if (window.initAuthUI) initAuthUI();</script>
+                                        <script src="/shared/auth-ui.js"></script>
+                                        <script>if (window.initAuthUI) initAuthUI();</script>
+                                        <script>
+                                            // Fallback: ensure header image is set from localStorage immediately
+                                            document.addEventListener('DOMContentLoaded', () => {
+                                                try {
+                                                    const s = JSON.parse(localStorage.getItem('user')) || null;
+                                                    const img = document.getElementById('header-profile-img');
+                                                    const profile = s && (s.profile || (s.user ? { metadata: { email: s.user.email }, id: s.user.id } : null));
+                                                    const url = profile && (profile.image || (profile.metadata && (profile.metadata.profile_pic || profile.metadata.image || profile.metadata.avatar || profile.metadata.picture)));
+                                                    if (img && url) img.src = url;
+                                                } catch (e) { /* ignore */ }
+                                            });
+                                        </script>
                     <!---->
                 </div>
             </div>
