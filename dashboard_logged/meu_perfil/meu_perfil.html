@@ -149,6 +149,8 @@
     const API_BASE_URL = window.location.hostname === 'localhost'
       ? 'http://localhost:3000/api'
       : '/api';
+    // Current profile id resolved from local store or server
+    let CURRENT_PROFILE_ID = null;
 
     // Função para mostrar notificações customizadas
     function showNotification(message, type = 'success') {
@@ -238,6 +240,9 @@
           document.getElementById('email').value = cachedUsuario.email || '';
           document.getElementById('phone').value = cachedUsuario.phone || '';
           document.getElementById('birthdate').value = cachedUsuario.birthdate ? formatDate(cachedUsuario.birthdate) : '';
+
+          // Set current profile id for update/delete actions
+          CURRENT_PROFILE_ID = cached.id || (store && store.user && (store.user.id || store.user.uid)) || null;
         } catch (e) {
           console.warn('Error applying cached profile to UI', e);
         }
@@ -300,6 +305,9 @@
         console.log('Selected profile source:', result.source, result.usuario);
         const usuario = result.usuario;
 
+        // Set resolved profile id for update/delete actions
+        CURRENT_PROFILE_ID = result.source || (usuario && usuario.id) || CURRENT_PROFILE_ID;
+
         // Atualizar informações de exibição
         document.getElementById('display-name').textContent = usuario.name || document.getElementById('display-name').textContent;
         document.getElementById('display-email').textContent = usuario.email || document.getElementById('display-email').textContent;
@@ -358,6 +366,19 @@
         return;
       }
 
+      // Ensure we have a userId
+      const userIdForUpdate = CURRENT_PROFILE_ID || (function () {
+        try {
+          const s = JSON.parse(localStorage.getItem('user')) || null;
+          return (s && s.profile && s.profile.id) || (s && s.user && (s.user.id || s.user.uid)) || null;
+        } catch (e) { return null; }
+      })();
+
+      if (!userIdForUpdate) {
+        showNotification('Não foi possível determinar o usuário. Refaça o login.', 'error');
+        return;
+      }
+
       // Faz a requisição para a API
       fetch(`${API_BASE_URL}/alterar_informacoes`, {
         method: 'POST',
@@ -366,6 +387,7 @@
         },
         body: JSON.stringify({
           action: 'update-user',
+          userId: userIdForUpdate,
           name: name,
           email: email,
           phone: phone,
@@ -395,13 +417,26 @@
     document.getElementById('delete-btn').addEventListener('click', function () {
       if (confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita!')) {
 
+        // Ensure we have a userId
+        const userIdForDelete = CURRENT_PROFILE_ID || (function () {
+          try {
+            const s = JSON.parse(localStorage.getItem('user')) || null;
+            return (s && s.profile && s.profile.id) || (s && s.user && (s.user.id || s.user.uid)) || null;
+          } catch (e) { return null; }
+        })();
+
+        if (!userIdForDelete) {
+          showNotification('Não foi possível determinar o usuário. Refaça o login.', 'error');
+          return;
+        }
+
         // Faz a requisição para a API
         fetch(`${API_BASE_URL}/alterar_informacoes`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ action: 'delete-account' })
+          body: JSON.stringify({ action: 'delete-account', userId: userIdForDelete })
         })
           .then(response => response.json())
           .then(data => {

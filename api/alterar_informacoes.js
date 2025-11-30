@@ -113,6 +113,64 @@ export default async function handler(req, res) {
             });
         }
 
+        // ATUALIZAR INFORMAÇÕES DO USUÁRIO (profiles)
+        if (action === 'update-user') {
+            const { userId, name, email, phone, birthdate } = req.body;
+            if (!userId) return res.status(400).json({ success: false, message: 'userId é obrigatório' });
+
+            // Prepare metadata object
+            const metadata = {};
+            if (email) metadata.email = email;
+            if (phone) metadata.phone = phone;
+            if (birthdate) metadata.birthdate = birthdate;
+
+            const updates = {
+                full_name: name || null,
+                metadata: Object.keys(metadata).length ? metadata : null
+            };
+
+            // Try update, if no row affected try insert
+            const { data: updated, error: upErr } = await supabase.from('profiles').update(updates).eq('id', userId).select().maybeSingle();
+            if (upErr) {
+                console.error('Error updating profile:', upErr);
+                return res.status(500).json({ success: false, message: 'Erro ao atualizar perfil', error: upErr.message });
+            }
+
+            if (updated) {
+                return res.status(200).json({ success: true, message: 'Perfil atualizado com sucesso', data: updated });
+            }
+
+            // Insert if not exists
+            const insertRow = {
+                id: userId,
+                full_name: name || null,
+                metadata: Object.keys(metadata).length ? metadata : null
+            };
+            const { data: inserted, error: inErr } = await supabase.from('profiles').insert([insertRow]).select().maybeSingle();
+            if (inErr) {
+                console.error('Error inserting profile:', inErr);
+                return res.status(500).json({ success: false, message: 'Erro ao criar perfil', error: inErr.message });
+            }
+
+            return res.status(201).json({ success: true, message: 'Perfil criado com sucesso', data: inserted });
+        }
+
+        // EXCLUIR CONTA DO USUÁRIO
+        if (action === 'delete-account') {
+            const { userId } = req.body;
+            if (!userId) return res.status(400).json({ success: false, message: 'userId é obrigatório' });
+
+            // Delete profile row
+            const { error: delErr } = await supabase.from('profiles').delete().eq('id', userId);
+            if (delErr) {
+                console.error('Error deleting profile:', delErr);
+                return res.status(500).json({ success: false, message: 'Erro ao excluir perfil', error: delErr.message });
+            }
+
+            // Note: deleting auth user requires Service Role Key and Admin REST; skipping here for safety
+            return res.status(200).json({ success: true, message: 'Conta excluída (perfil removido).'});
+        }
+
         return res.status(400).json({ success: false, message: 'Ação inválida' });
 
     } catch (error) {
