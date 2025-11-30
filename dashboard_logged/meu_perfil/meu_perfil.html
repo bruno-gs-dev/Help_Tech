@@ -202,7 +202,12 @@
         store = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('supabase.session')) || null;
       } catch (e) { store = null; }
 
-      const userId = (store && store.user && (store.user.id || store.user.uid)) ? (store.user.id || store.user.uid) : null;
+      // Prefer profile.id (already fetched at login), otherwise fall back to auth user id
+      const userId = (store && store.profile && store.profile.id)
+        ? store.profile.id
+        : (store && store.user && (store.user.id || store.user.uid) ? (store.user.id || store.user.uid) : null);
+
+      console.log('Fetching profile for userId=', userId);
 
       fetch(`${API_BASE_URL}/capturar_informacoes`, {
         method: 'POST',
