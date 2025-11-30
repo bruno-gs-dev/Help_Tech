@@ -403,6 +403,21 @@
             document.getElementById('display-email').textContent = email;
             document.getElementById('display-phone').textContent = phone;
             document.getElementById('display-birthdate').textContent = birthdate;
+            // Keep localStorage in sync and update header via AUTH_UI
+            try {
+              const s = JSON.parse(localStorage.getItem('user')) || {};
+              s.profile = s.profile || {};
+              s.profile.id = s.profile.id || userIdForUpdate;
+              s.profile.full_name = name;
+              s.profile.metadata = s.profile.metadata || {};
+              s.profile.metadata.email = email;
+              s.profile.metadata.phone = phone;
+              s.profile.metadata.birthdate = birthdate && birthdate.includes('/') ? parseDateToISO(birthdate) : birthdate;
+              localStorage.setItem('user', JSON.stringify(s));
+              if (window.AUTH_UI && typeof AUTH_UI.syncProfile === 'function') AUTH_UI.syncProfile(s.profile);
+            } catch (e) {
+              console.warn('Error syncing local profile after save', e);
+            }
           } else {
             showNotification(data.message, 'error');
           }

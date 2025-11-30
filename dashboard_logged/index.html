@@ -139,19 +139,8 @@
                             window.location.href = '../index.html';
                         }
                     </script>
-                    <script>
-                        // On load, try to set profile image from stored user/profile
-                        try {
-                            const store = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('supabase.session')) || null;
-                            const profileImg = document.getElementById('header-profile-img');
-                            if (store && store.profile && (store.profile.image || (store.profile.metadata && (store.profile.metadata.profile_pic || store.profile.metadata.image || store.profile.metadata.avatar)))) {
-                                const imgUrl = store.profile.image || store.profile.metadata.profile_pic || store.profile.metadata.image || store.profile.metadata.avatar;
-                                if (imgUrl && profileImg) profileImg.src = imgUrl;
-                            }
-                        } catch (e) {
-                            // ignore
-                        }
-                    </script>
+                    <script src="/shared/auth-ui.js"></script>
+                    <script>if (window.initAuthUI) initAuthUI();</script>
                     <!---->
                 </div>
             </div>

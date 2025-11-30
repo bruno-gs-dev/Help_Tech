@@ -174,24 +174,8 @@
         </div>
     </header>
 
-    <script>
-        // Populate admin header with logged user info when available
-        try {
-            const store = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('supabase.session')) || null;
-            if (store && store.profile) {
-                const profile = store.profile;
-                const nameEl = document.getElementById('admin-name');
-                const emailEl = document.getElementById('admin-email');
-                const imgEl = document.getElementById('admin-profile-img');
-                if (nameEl) nameEl.textContent = profile.full_name || profile.username || (store.user && store.user.email) || 'Parceiro Admin';
-                if (emailEl) emailEl.textContent = profile.email || (store.user && store.user.email) || 'admin@helptech.com';
-                const imgUrl = profile.image || (profile.metadata && (profile.metadata.profile_pic || profile.metadata.image || profile.metadata.avatar));
-                if (imgUrl && imgEl) imgEl.src = imgUrl;
-            }
-        } catch (e) {
-            // ignore
-        }
-    </script>
+    <script src="/shared/auth-ui.js"></script>
+    <script>if (window.initAuthUI) initAuthUI();</script>
 
     <div class="flex min-h-screen">
         <!-- Sidebar -->
