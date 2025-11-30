@@ -597,6 +597,20 @@
     <!-- Javascript -->
     <script src="js/global.js"></script>
 
+    <!-- Supabase JS (UMD) and config for client-side registration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+    <script src="../../shared/supabase-config.js"></script>
+    <script>
+        if (window.SUPABASE_CONFIG && window.supabase) {
+            try {
+                window.SUPABASE_CLIENT = supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+                console.log('[supabase-config] SUPABASE_CLIENT created (register)');
+            } catch (e) {
+                console.warn('[supabase-config] failed to create SUPABASE_CLIENT on register page', e);
+            }
+        }
+    </script>
+
     <script>
         let registroData = null;
 

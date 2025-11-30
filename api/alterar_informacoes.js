@@ -129,7 +129,7 @@ export default async function handler(req, res) {
                 metadata: Object.keys(metadata).length ? metadata : null
             };
 
-            // Try update, if no row affected try insert
+            // Try update. If no row found, DO NOT create automatically to avoid unintended creations.
             const { data: updated, error: upErr } = await supabase.from('profiles').update(updates).eq('id', userId).select().maybeSingle();
             if (upErr) {
                 console.error('Error updating profile:', upErr);
@@ -140,19 +140,9 @@ export default async function handler(req, res) {
                 return res.status(200).json({ success: true, message: 'Perfil atualizado com sucesso', data: updated });
             }
 
-            // Insert if not exists
-            const insertRow = {
-                id: userId,
-                full_name: name || null,
-                metadata: Object.keys(metadata).length ? metadata : null
-            };
-            const { data: inserted, error: inErr } = await supabase.from('profiles').insert([insertRow]).select().maybeSingle();
-            if (inErr) {
-                console.error('Error inserting profile:', inErr);
-                return res.status(500).json({ success: false, message: 'Erro ao criar perfil', error: inErr.message });
-            }
-
-            return res.status(201).json({ success: true, message: 'Perfil criado com sucesso', data: inserted });
+            // If we did not find a profile to update, return 404 instead of inserting.
+            // This prevents accidental creation of profiles when the client intended to edit an existing one.
+            return res.status(404).json({ success: false, message: 'Perfil não encontrado no servidor. Criação automática desabilitada para edição.' });
         }
 
         // EXCLUIR CONTA DO USUÁRIO
