@@ -101,7 +101,8 @@
     const IMAGE_FALLBACK = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+';
 
         let cart = [];
-        let filteredProducts = [...products];
+        // filteredProducts will contain the products currently shown (depends on login state)
+        let filteredProducts = [];
         let currentSort = 'relevance';
         let currentCategory = 'all';
         let productQuantities = {};
@@ -253,6 +254,26 @@
             return starsHtml;
         }
 
+        // Retorna true se o usuário estiver logado
+        function isLoggedIn() {
+            try {
+                return Boolean(localStorage.getItem('user'));
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Atualiza a lista `filteredProducts` de acordo com o estado de login
+        function updateDisplayedProducts() {
+            if (isLoggedIn()) {
+                // usuário logado vê todos os produtos (incluindo indisponíveis para gerenciamento)
+                filteredProducts = [...products];
+            } else {
+                // usuário não logado vê apenas produtos disponíveis
+                filteredProducts = products.filter(p => p.status === 'available');
+            }
+        }
+
         // Função para renderizar os produtos
         function renderProducts() 
         {
@@ -263,7 +284,9 @@
             
             if (currentCategory === 'all') 
             {
-                resultsCount.textContent = `Mostrando ${filteredProducts.length} de ${products.length} produtos`;
+                // Mostrar total referente à fonte (se usuário logado, total = produtos totais; caso contrário só disponíveis)
+                const totalCount = isLoggedIn() ? products.length : products.filter(p => p.status === 'available').length;
+                resultsCount.textContent = `Mostrando ${filteredProducts.length} de ${totalCount} produtos`;
             } 
             
             else 
