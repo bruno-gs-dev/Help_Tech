@@ -112,11 +112,25 @@ class MinimalLoginForm {
                 if (error) {
                     this.showError('password', error.message || 'Login failed.');
                 } else {
-                    // Save user/session for compatibility
+                    // Save user/session for compatibility and fetch profile
                     try {
-                        if (data.session) localStorage.setItem('supabase.session', JSON.stringify(data.session));
-                        if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
-                    } catch (e) { /* ignore storage errors */ }
+                        const session = data.session || null;
+                        const user = data.user || (session ? session.user : null);
+                        if (session) localStorage.setItem('supabase.session', JSON.stringify(session));
+
+                        let profile = null;
+                        if (user && window.SUPABASE_CLIENT) {
+                            const { data: p, error: pErr } = await window.SUPABASE_CLIENT
+                                .from('profiles')
+                                .select('id,username,full_name,role,is_admin,metadata')
+                                .eq('id', user.id)
+                                .single();
+                            if (!pErr) profile = p; else console.warn('Profile fetch error:', pErr);
+                        }
+
+                        const store = { user, profile, session };
+                        localStorage.setItem('user', JSON.stringify(store));
+                    } catch (e) { console.warn('Error saving session/profile', e); }
 
                     this.showSuccess();
                 }

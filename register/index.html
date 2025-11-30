@@ -690,6 +690,38 @@
                         return;
                     }
 
+                    // Try to upsert profile when Supabase returns a user id
+                    try {
+                        const userId = data?.user?.id || data?.session?.user?.id;
+                        if (userId) {
+                            const username = formDataObj.username || (email ? email.split('@')[0] : null);
+                            const full_name = ((formDataObj.first_name || '') + ' ' + (formDataObj.last_name || '')).trim();
+                            const profilePayload = {
+                                id: userId,
+                                username: username,
+                                full_name: full_name || null,
+                                metadata: {
+                                    phone: formDataObj.phone || null,
+                                    birthday: formDataObj.birthday || null,
+                                    signup_source: 'site'
+                                }
+                            };
+
+                            const { error: upsertError } = await window.SUPABASE_CLIENT
+                                .from('profiles')
+                                .upsert(profilePayload, { returning: 'minimal' });
+
+                            if (upsertError) {
+                                console.warn('Erro ao upsert profile:', upsertError);
+                            }
+                        } else {
+                            // No user id returned immediately (email confirm flow). Recommend server-side webhook.
+                            console.warn('Registro criado mas sem user id imediato — trate profile via webhook/server.');
+                        }
+                    } catch (e) {
+                        console.error('Erro ao criar profile:', e);
+                    }
+
                     // Success - some projects require email confirmation
                     fecharModal();
                     document.getElementById('successModal').classList.add('show');
