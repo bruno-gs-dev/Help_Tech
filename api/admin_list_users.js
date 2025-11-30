@@ -2,15 +2,24 @@
 // Usage: GET /api/admin_list_users
 
 export default async function handler(req, res) {
-    // Allow simple CORS for testing from browser/dev
+    // Protect this endpoint with an ADMIN_TOOL_KEY header
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-tool-key');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'GET') return res.status(405).json({ success: false, message: 'Método não permitido' });
 
     try {
+        const ADMIN_TOOL_KEY = process.env.ADMIN_TOOL_KEY;
+        const providedKey = req.headers['x-admin-tool-key'] || req.headers['admin-tool-key'];
+        if (!ADMIN_TOOL_KEY) {
+            return res.status(500).json({ success: false, message: 'ADMIN_TOOL_KEY não configurado no servidor. Defina uma chave para proteger este endpoint.' });
+        }
+        if (!providedKey || providedKey !== ADMIN_TOOL_KEY) {
+            return res.status(401).json({ success: false, message: 'Chave administrativa inválida' });
+        }
+
         const SUPABASE_URL = process.env.SUPABASE_URL;
         const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
