@@ -60,10 +60,29 @@ export default async function handler(req, res) {
                     return res.status(400).json({ success: false, message: 'userId não fornecido' });
                 }
 
-                const { data, error } = await supabase.from('profiles').select('id,username,full_name,role,is_admin,metadata').eq('id', userId).maybeSingle();
+                // Determine lookup strategy: if userId looks like a UUID, query by id.
+                // Otherwise, try other columns (user_id) and metadata->>email.
+                const isUUID = typeof userId === 'string' && /^[0-9a-fA-F-]{36}$/.test(userId);
+                let data = null;
+                let error = null;
+
+                if (isUUID) {
+                    const resp = await supabase.from('profiles').select('id,username,full_name,role,is_admin,metadata').eq('id', userId).maybeSingle();
+                    data = resp.data; error = resp.error;
+                } else {
+                    // try user_id column
+                    const resp1 = await supabase.from('profiles').select('id,username,full_name,role,is_admin,metadata').eq('user_id', userId).maybeSingle();
+                    data = resp1.data; error = resp1.error;
+                    if (!data) {
+                        // try metadata email
+                        const resp2 = await supabase.from('profiles').select('id,username,full_name,role,is_admin,metadata').filter('metadata->>email', 'eq', String(userId)).maybeSingle();
+                        data = resp2.data; error = resp2.error;
+                    }
+                }
+
                 if (error) {
                     console.error('Erro ao buscar profile:', error);
-                    return res.status(500).json({ success: false, message: 'Erro ao buscar perfil', error: error.message });
+                    return res.status(500).json({ success: false, message: 'Erro ao buscar perfil', error: error.message || String(error) });
                 }
 
                 if (!data) {
