@@ -164,15 +164,34 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-sm font-semibold text-gray-800">Parceiro Admin</div>
-                        <div class="text-xs text-gray-500">admin@helptech.com</div>
+                        <div id="admin-name" class="text-sm font-semibold text-gray-800">Parceiro Admin</div>
+                        <div id="admin-email" class="text-xs text-gray-500">admin@helptech.com</div>
                     </div>
-                    <img src="../img/perfil_image.jpg" alt="Admin"
+                    <img id="admin-profile-img" src="../img/perfil_image.jpg" alt="Admin"
                         class="w-10 h-10 rounded-full border-2 border-primary">
                 </div>
             </div>
         </div>
     </header>
+
+    <script>
+        // Populate admin header with logged user info when available
+        try {
+            const store = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('supabase.session')) || null;
+            if (store && store.profile) {
+                const profile = store.profile;
+                const nameEl = document.getElementById('admin-name');
+                const emailEl = document.getElementById('admin-email');
+                const imgEl = document.getElementById('admin-profile-img');
+                if (nameEl) nameEl.textContent = profile.full_name || profile.username || (store.user && store.user.email) || 'Parceiro Admin';
+                if (emailEl) emailEl.textContent = profile.email || (store.user && store.user.email) || 'admin@helptech.com';
+                const imgUrl = profile.image || (profile.metadata && (profile.metadata.profile_pic || profile.metadata.image || profile.metadata.avatar));
+                if (imgUrl && imgEl) imgEl.src = imgUrl;
+            }
+        } catch (e) {
+            // ignore
+        }
+    </script>
 
     <div class="flex min-h-screen">
         <!-- Sidebar -->
