@@ -509,9 +509,12 @@
                         <textarea id="productDescription" required rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"></textarea>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">URL da Imagem *</label>
-                        <input type="url" id="productImage" required placeholder="https://exemplo.com/imagem.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
-                        <p class="text-xs text-gray-500 mt-1">Cole a URL completa da imagem do produto</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Imagem do Produto *</label>
+                        <div class="flex gap-4">
+                            <input type="url" id="productImage" placeholder="https://exemplo.com/imagem.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                            <input type="file" id="productImageFile" accept="image/*" class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary"/>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Escolha um arquivo local para enviar (antes de salvar) ou cole a URL.</p>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Pré-visualização da Imagem</label>
@@ -792,6 +795,7 @@
         // Image preview on URL input
         document.addEventListener('DOMContentLoaded', function() {
             const imageInput = document.getElementById('productImage');
+            const imageFileInput = document.getElementById('productImageFile');
             const imagePreview = document.getElementById('imagePreview');
 
             imageInput.addEventListener('input', function() {
@@ -801,6 +805,17 @@
                 } else {
                     imagePreview.innerHTML = '<span class="text-gray-400">A imagem aparecerá aqui</span>';
                 }
+            });
+
+            imageFileInput.addEventListener('change', function () {
+                const file = this.files && this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.innerHTML = `<img src="${e.target.result}" class="image-preview" alt="Preview">`;
+                    imageInput.value = '';
+                };
+                reader.readAsDataURL(file);
             });
 
             // Carregar produtos do banco de dados
@@ -814,38 +829,55 @@
         document.getElementById('productForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const formData = new FormData();
-            formData.append('action', editingProductId ? 'edit' : 'add');
-            formData.append('name', document.getElementById('productName').value);
-            formData.append('category', document.getElementById('productCategory').value);
-            formData.append('price', document.getElementById('productPrice').value);
-            formData.append('status', document.getElementById('productStatus').value);
-            formData.append('rating', document.getElementById('productRating').value);
-            formData.append('description', document.getElementById('productDescription').value);
-            formData.append('image', document.getElementById('productImage').value);
-            
-            if (editingProductId) {
-                formData.append('id', editingProductId);
-            }
+            (async () => {
+                try {
+                    const formData = new FormData();
+                    formData.append('action', editingProductId ? 'edit' : 'add');
+                    formData.append('name', document.getElementById('productName').value);
+                    formData.append('category', document.getElementById('productCategory').value);
+                    formData.append('price', document.getElementById('productPrice').value);
+                    formData.append('status', document.getElementById('productStatus').value);
+                    formData.append('rating', document.getElementById('productRating').value);
+                    formData.append('description', document.getElementById('productDescription').value);
+                    formData.append('image', document.getElementById('productImage').value);
 
-            fetch('alterar_informacoes.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification(data.message, 'success');
-                    closeProductModal();
-                    loadProductsFromDB();
-                } else {
-                    showNotification(data.message, 'error');
+                    if (editingProductId) {
+                        formData.append('id', editingProductId);
+                    }
+
+                    const fileInput = document.getElementById('productImageFile');
+                    if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        const arrayBuffer = await file.arrayBuffer();
+                        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+
+                        const upResp = await fetch('/api/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ filename: file.name, content: base64, contentType: file.type })
+                        });
+                        const upJson = await upResp.json();
+                        if (!upJson.success) throw new Error(upJson.message || 'Upload failed');
+                        formData.set('image', upJson.publicURL);
+                    }
+
+                    const response = await fetch('alterar_informacoes.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        showNotification(data.message, 'success');
+                        closeProductModal();
+                        loadProductsFromDB();
+                    } else {
+                        showNotification(data.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    showNotification('Erro ao salvar produto.', 'error');
                 }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                showNotification('Erro ao salvar produto.', 'error');
-            });
+            })();
         });
 
         // Show notification
