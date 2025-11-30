@@ -116,6 +116,17 @@ export default async function handler(req, res) {
 
                 if (!resp.ok) {
                     console.error('Supabase admin create user error', resp.status, result);
+                    // If Supabase returns 403 not_admin, give a helpful message about the Service Role Key
+                    if (resp.status === 403 && result && result.error_code === 'not_admin') {
+                        return res.status(403).json({
+                            success: false,
+                            message: 'Erro ao criar usuário no Supabase',
+                            status: resp.status,
+                            error: result,
+                            hint: 'O key usado não tem privilégios admin. Verifique se SUPABASE_SERVICE_ROLE_KEY está configurado e é a Service Role Key (Dashboard → Settings → API → Service Role Key), não a anon key.'
+                        });
+                    }
+
                     // Return the status and API message if possible
                     return res.status(500).json({
                         success: false,
