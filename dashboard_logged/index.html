@@ -63,23 +63,41 @@
 
         <div class="bg-white/95 glass-effect py-6">
             <div class="max-w-7xl mx-auto px-6">
-                <div class="flex items-center gap-8">
-                    <a href="#" class="logo logo-gradient text-3xl font-bold no-underline relative"
-                        onclick="filterByCategory('all')">HelPTech!</a>
+                <div class="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+                    <div class="w-full lg:w-auto flex justify-between items-center">
+                        <a href="#" class="logo logo-gradient text-3xl font-bold no-underline relative"
+                            onclick="filterByCategory('all')">HelPTech!</a>
 
-                    <div class="flex-1 max-w-2xl">
+                        <div class="flex items-center gap-2 lg:hidden">
+                            <button
+                                class="cart-button bg-white border-2 border-gray-200 text-gray-800 p-2 rounded-lg cursor-pointer relative shadow-sm hover:border-primary"
+                                onclick="openCart()">
+                                <span>🛒</span>
+                                <span
+                                    class="cart-count btn-gradient-accent text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-semibold absolute -top-1 -right-1 shadow-sm"
+                                    id="cartCountMobile">0</span>
+                            </button>
+                            <!-- Profile Mobile -->
+                             <button id="profileButtonMobile" class="flex items-center focus:outline-none ml-2" onclick="toggleProfileMenuMobile(event)">
+                                <img id="header-profile-img-mobile" src="./img/perfil_image.jpg" alt="Foto de perfil"
+                                    class="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-primary transition-all duration-200 cursor-pointer">
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="w-full flex-1 max-w-2xl">
                         <div
                             class="flex bg-white border-2 border-gray-200 rounded-2xl p-1 shadow-sm transition-all duration-200 focus-within:border-primary focus-within:shadow-lg focus-within:shadow-primary/10">
-                            <input type="text" id="searchInput" placeholder="Buscar produtos para aluguel..."
-                                class="flex-1 px-5 py-3.5 border-none text-base outline-none bg-transparent">
+                            <input type="text" id="searchInput" placeholder="Buscar produtos..."
+                                class="flex-1 px-4 py-3 border-none text-base outline-none bg-transparent w-full">
                             <button onclick="filterProducts()"
-                                class="btn-gradient-primary text-white px-6 py-3.5 border-none rounded-xl cursor-pointer font-semibold text-sm whitespace-nowrap transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                                class="btn-gradient-primary text-white px-4 md:px-6 py-3 border-none rounded-xl cursor-pointer font-semibold text-sm whitespace-nowrap transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md">
                                 Buscar
                             </button>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4">
+                    <div class="hidden lg:flex items-center gap-4">
                         <button
                             class="cart-button bg-white border-2 border-gray-200 text-gray-800 px-5 py-3 rounded-lg cursor-pointer flex items-center gap-3 text-sm font-medium transition-all duration-200 relative shadow-sm hover:border-primary hover:text-primary hover:-translate-y-0.5 hover:shadow-md"
                             onclick="openCart()">
@@ -93,8 +111,8 @@
                                 id="cartCount">0</span>
                         </button>
                     </div>
-                    <!-- Perfil do usuário -->
-                    <div class="relative">
+                    <!-- Perfil do usuário (Desktop) -->
+                    <div class="relative hidden lg:block">
                         <button id="profileButton" class="flex items-center focus:outline-none">
                             <img id="header-profile-img" src="./img/perfil_image.jpg" alt="Foto de perfil"
                                 class="w-12 h-12 rounded-full border-2 border-gray-200 hover:border-primary transition-all duration-200 cursor-pointer object-cover">
@@ -103,7 +121,7 @@
                             </div>
                         </button>
                         <div id="profileMenu"
-                            class="hidden absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                            class="hidden absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-[60]">
                             <a href="./meu_perfil/meu_perfil.html"
                                 class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">👤
                                 Meu
@@ -119,6 +137,27 @@
                                 class="block px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-danger transition-all">🚪
                                 Sair</a>
                         </div>
+                    </div>
+
+                    <!-- Mobile Profile Menu Dropdown (Centered or Full width) -->
+                    <div id="profileMenuMobile" class="lg:hidden hidden fixed inset-0 z-[100] bg-black/50" onclick="toggleProfileMenuMobile(event)">
+                         <div class="absolute right-4 top-20 w-64 bg-white rounded-xl shadow-xl overflow-hidden" onclick="event.stopPropagation()">
+                            <div class="p-4 border-b border-gray-100 bg-gray-50">
+                                <span class="font-semibold text-gray-700">Menu do Usuário</span>
+                            </div>
+                            <a href="./meu_perfil/meu_perfil.html"
+                                class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">👤
+                                Meu Perfil</a>
+                            <a href="./area_administrativa/area_adm.html" data-requires-admin
+                                class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">🔧
+                                Área Administrativa</a>
+                            <a href="#"
+                                class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">⚙️
+                                Opções</a>
+                            <a href="#" onclick="logout()"
+                                class="block px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-danger transition-all">🚪
+                                Sair</a>
+                         </div>
                     </div>
                     <script>
                         // Menu do perfil
@@ -193,8 +232,14 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
-                <aside
-                    class="bg-white/90 glass-effect rounded-2xl border border-gray-100 shadow-md sticky top-36 overflow-hidden">
+                <!-- Mobile Filter Toggle -->
+                <button onclick="toggleFilters()"
+                    class="lg:hidden w-full bg-white border border-gray-200 text-gray-700 py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-medium shadow-sm hover:bg-gray-50 transition-colors">
+                    <span>🔍</span> Filtrar e Organizar
+                </button>
+
+                <aside id="filterSidebar"
+                    class="hidden lg:block bg-white/90 glass-effect rounded-2xl border border-gray-100 shadow-md sticky top-36 overflow-hidden transition-all duration-300">
                     <div class="p-6 border-b border-gray-100">
                         <div class="font-semibold text-base mb-4 text-gray-800 flex items-center gap-2">🏷️ Categoria
                         </div>
@@ -410,6 +455,35 @@
         </div>
     </div>
 
+    <script src="../scripts/responsive-utils.js"></script>
+    <script>
+        function toggleProfileMenuMobile(event) {
+            if (event.target === event.currentTarget || event.currentTarget.id === 'profileButtonMobile' || event.currentTarget.closest('#profileButtonMobile')) {
+                const menu = document.getElementById('profileMenuMobile');
+                menu.classList.toggle('hidden');
+            }
+        }
+
+        // Sync profile image for mobile
+        document.addEventListener('DOMContentLoaded', () => {
+             const img = document.getElementById('header-profile-img');
+             const imgMobile = document.getElementById('header-profile-img-mobile');
+             if(img && imgMobile) {
+                 // Observer to copy src if it changes later
+                 const observer = new MutationObserver((mutations) => {
+                     mutations.forEach((mutation) => {
+                         if(mutation.attributeName === 'src') {
+                             imgMobile.src = img.src;
+                         }
+                     });
+                 });
+                 observer.observe(img, { attributes: true });
+
+                 // Initial set
+                 if(img.src) imgMobile.src = img.src;
+             }
+        });
+    </script>
     <script src="./main.js"></script>
 </body>
 

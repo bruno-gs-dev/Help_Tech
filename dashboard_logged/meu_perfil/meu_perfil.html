@@ -58,21 +58,24 @@
   <div class="bg-white shadow-2xl rounded-3xl w-[90%] max-w-6xl p-0 overflow-hidden m-6">
     <!-- Cabeçalho -->
     <div
-      class="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white flex items-center justify-between rounded-t-3xl">
-      <div class="flex items-center gap-4">
-        <a href="../index.html" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg no-underline">◀ Voltar</a>
-        <h1 class="text-3xl font-bold">Meu Perfil</h1>
+      class="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white flex flex-col sm:flex-row items-center justify-between rounded-t-3xl gap-4">
+      <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+        <a href="../index.html" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg no-underline w-full sm:w-auto text-center">◀ Voltar</a>
+        <h1 class="text-2xl sm:text-3xl font-bold">Meu Perfil</h1>
       </div>
-      <button class="bg-white text-blue-700 px-5 py-2 rounded-xl hover:bg-gray-100 transition font-medium">Sair</button>
+      <button class="bg-white text-blue-700 px-5 py-2 rounded-xl hover:bg-gray-100 transition font-medium w-full sm:w-auto" id="logoutBtn">Sair</button>
       <script>
         // Adicione aqui a funcionalidade do botão Sair, se necessário
-        window.onload = function () {
-          document.querySelector('button').addEventListener('click', function () {
-            // Redireciona para a página de logout ou encerra a sessão
-            localStorage.removeItem('user');
-            window.location.href = '../../index.html'; // Ajuste o caminho conforme necessário
-          });
-        };
+        document.addEventListener('DOMContentLoaded', function () {
+          const btn = document.getElementById('logoutBtn');
+          if (btn) {
+              btn.addEventListener('click', function () {
+                // Redireciona para a página de logout ou encerra a sessão
+                localStorage.removeItem('user');
+                window.location.href = '../../index.html'; // Ajuste o caminho conforme necessário
+              });
+          }
+        });
       </script>
     </div>
 
