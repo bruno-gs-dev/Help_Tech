@@ -24,14 +24,23 @@ const categoryNames = {
 // Função principal que inicia o sistema
 async function loadProducts() {
     try {
-        // Adicionamos ?t=timestamp para evitar cache do navegador e pegar sempre a versão mais recente
-        const response = await fetch('products.json?t=' + new Date().getTime());
-
-        if (!response.ok) {
-            throw new Error('Não foi possível carregar o arquivo products.json');
+        // Tenta carregar do endpoint API (Supabase). Se falhar, faz fallback para products.json
+        let response;
+        try {
+            response = await fetch('/api/products?t=' + new Date().getTime());
+        } catch (e) {
+            response = null;
         }
 
-        products = await response.json();
+        if (!response || !response.ok) {
+            // fallback para arquivo estático
+            const fallback = await fetch('products.json?t=' + new Date().getTime());
+            if (!fallback.ok) throw new Error('Não foi possível carregar os produtos do servidor nem do arquivo local');
+            products = await fallback.json();
+        } else {
+            const body = await response.json();
+            products = body && body.data ? body.data : [];
+        }
 
         // Inicializa a lista filtrada com todos os produtos
         filteredProducts = [...products];
@@ -51,7 +60,7 @@ async function loadProducts() {
                 if (product.status === 'available') {
                     updateProductPrice(product.id);
                     // Desabilita o botão de menos inicialmente
-                    const minusBtn = document.querySelector(`[onclick="changeQuantity(${product.id}, -1)"]`);
+                    const minusBtn = document.querySelector(`[onclick="changeQuantity('${product.id}', -1)"]`);
                     if (minusBtn) minusBtn.disabled = true;
                 }
             });
@@ -71,6 +80,11 @@ async function loadProducts() {
     }
 }
 
+// Helper para gerar IDs válidos no DOM a partir de UUIDs/strings
+function safeId(id) {
+    return String(id).replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
 // --- 2. LÓGICA DE PRODUTOS (PREÇOS E QUANTIDADES) ---
 
 // Função para mudar quantidade
@@ -80,13 +94,12 @@ function changeQuantity(productId, change) {
 
     productQuantities[productId] = newQty;
 
-    const qtyDisplay = document.getElementById(`qty-${productId}`);
-    if (qtyDisplay) {
-        qtyDisplay.textContent = newQty;
-    }
+    const idSafe = safeId(productId);
+    const qtyDisplay = document.getElementById(`qty-${idSafe}`);
+    if (qtyDisplay) qtyDisplay.textContent = newQty;
 
-    const minusBtn = document.querySelector(`[onclick="changeQuantity(${productId}, -1)"]`);
-    const plusBtn = document.querySelector(`[onclick="changeQuantity(${productId}, 1)"]`);
+    const minusBtn = document.querySelector(`[onclick="changeQuantity('${productId}', -1)"]`);
+    const plusBtn = document.querySelector(`[onclick="changeQuantity('${productId}', 1)"]`);
 
     if (minusBtn) minusBtn.disabled = newQty <= 1;
     if (plusBtn) plusBtn.disabled = newQty >= 10;
@@ -96,11 +109,12 @@ function changeQuantity(productId, change) {
 
 // Função para atualizar preço do produto baseado na quantidade e período
 function updateProductPrice(productId) {
-    const product = products.find(p => p.id === productId);
+    const product = products.find(p => String(p.id) === String(productId));
     if (!product) return;
 
     const quantity = productQuantities[productId] || 1;
-    const periodSelect = document.getElementById(`period-${productId}`);
+    const idSafe = safeId(productId);
+    const periodSelect = document.getElementById(`period-${idSafe}`);
     const period = periodSelect ? parseInt(periodSelect.value) : 1;
 
     productPeriods[productId] = period;
@@ -115,12 +129,10 @@ function updateProductPrice(productId) {
 
     const totalPrice = product.price * quantity * periodMultiplier;
 
-    const totalDisplay = document.getElementById(`total-${productId}`);
+    const totalDisplay = document.getElementById(`total-${idSafe}`);
     if (totalDisplay) {
         const totalAmount = totalDisplay.querySelector('.total-amount');
-        if (totalAmount) {
-            totalAmount.textContent = `R$ ${totalPrice.toFixed(2).replace('.', ',')}`;
-        }
+        if (totalAmount) totalAmount.textContent = `R$ ${totalPrice.toFixed(2).replace('.', ',')}`;
     }
 }
 
@@ -293,6 +305,7 @@ function renderProducts() {
         const badgeText = product.status === 'available' ? '✅ Disponível' : '❌ Indisponível';
         const buttonDisabled = product.status === 'rented' ? 'disabled' : '';
         const reviewsCount = product.reviews || 0;
+        const idSafe = safeId(product.id);
 
         // HTML do Card do Produto
         const productCard = `
@@ -314,7 +327,7 @@ function renderProducts() {
                 </div>
                 <p class="text-sm text-gray-600 mb-4 leading-6 line-clamp-2">${product.description}</p>
                 <div class="mb-4">
-                    <select id="period-${product.id}" onchange="updateProductPrice(${product.id})"
+                        <select id="period-${idSafe}" onchange="updateProductPrice('${product.id}')"
                             class="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm bg-white transition-colors duration-200 focus:outline-none focus:border-primary focus:shadow-sm focus:shadow-primary/10">
                         <option value="1">1 dia</option>
                         <option value="3">3 dias</option>
@@ -325,20 +338,20 @@ function renderProducts() {
                 <div class="mb-4">
                     <label class="text-sm font-medium text-gray-600 block mb-2">Quantidade:</label>
                     <div class="flex items-center gap-3">
-                        <button type="button" onclick="changeQuantity(${product.id}, -1)"
+                        <button type="button" onclick="changeQuantity('${product.id}', -1)"
                                 class="w-8 h-8 border border-gray-300 bg-white rounded-lg cursor-pointer flex items-center justify-center font-semibold text-gray-600 transition-all duration-200 hover:border-primary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
                                 ${product.status === 'rented' ? 'disabled' : ''}>-</button>
-                        <span class="min-w-8 text-center font-semibold text-gray-800" id="qty-${product.id}">1</span>
-                        <button type="button" onclick="changeQuantity(${product.id}, 1)"
+                        <span class="min-w-8 text-center font-semibold text-gray-800" id="qty-${idSafe}">1</span>
+                        <button type="button" onclick="changeQuantity('${product.id}', 1)"
                                 class="w-8 h-8 border border-gray-300 bg-white rounded-lg cursor-pointer flex items-center justify-center font-semibold text-gray-600 transition-all duration-200 hover:border-primary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
                                 ${product.status === 'rented' ? 'disabled' : ''}>+</button>
                     </div>
                 </div>
-                <div class="flex justify-between items-center mb-4 px-3 py-3 bg-gray-50 rounded-lg text-sm" id="total-${product.id}">
+                <div class="flex justify-between items-center mb-4 px-3 py-3 bg-gray-50 rounded-lg text-sm" id="total-${idSafe}">
                     <span class="font-medium text-gray-600">Total:</span>
                     <span class="total-amount font-bold text-primary text-base">R$ ${parseFloat(product.price).toFixed(2).replace('.', ',')}</span>
                 </div>
-                <button onclick="addToCart(${product.id})"
+                <button onclick="addToCart('${product.id}')"
                         class="${product.status === 'rented' ? 'bg-gray-400 cursor-not-allowed' : 'btn-gradient-primary hover:-translate-y-0.5 hover:shadow-lg'} w-full px-3 py-3.5 text-white border-none rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 uppercase tracking-wide"
                         ${buttonDisabled}>
                     ${product.status === 'rented' ? '❌ Indisponível' : '🛒 Adicionar ao carrinho'}

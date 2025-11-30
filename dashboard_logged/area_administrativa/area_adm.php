@@ -559,27 +559,47 @@
         // Carregar produtos do products.json (mesmos produtos da home)
         function loadProductsFromDB() {
             // Carrega do mesmo arquivo JSON usado na home page
-            fetch('../../products.json?t=' + new Date().getTime())
-            .then(response => response.json())
-            .then(data => {
-                // Mapeia os campos do JSON (inglês) para os campos esperados (português)
-                products = data.map(product => ({
-                    id: product.id,
-                    nome: product.name,
-                    descricao: product.description,
-                    preco: product.price,
-                    categoria: product.category,
-                    status: product.status,
-                    imagem: product.image,
-                    avaliacao: product.rating,
-                    reviews: product.reviews
-                }));
-                loadProducts();
-            })
-            .catch(error => {
-                console.error('Erro ao carregar produtos:', error);
-                showNotification('Erro ao carregar produtos.', 'error');
-            });
+            // Carregar produtos do Supabase via API (fallback para JSON local)
+            fetch(API_BASE_URL + '/products?t=' + new Date().getTime())
+                .then(response => response.json())
+                .then(payload => {
+                    const list = payload && payload.data ? payload.data : payload;
+                    products = list.map(product => ({
+                        id: product.id,
+                        nome: product.name || product.nome,
+                        descricao: product.description || product.descricao || '',
+                        preco: Number(product.price || product.preco || 0),
+                        categoria: product.category || product.categoria,
+                        status: product.status || 'available',
+                        imagem: product.image || product.imagem || '',
+                        avaliacao: Number(product.rating || product.avaliacao || 0),
+                        reviews: Number(product.reviews || 0)
+                    }));
+                    loadProducts();
+                })
+                .catch(error => {
+                    console.warn('Erro ao carregar via API, tentando arquivo local:', error);
+                    fetch('../../products.json?t=' + new Date().getTime())
+                        .then(r => r.json())
+                        .then(data => {
+                            products = data.map(product => ({
+                                id: product.id,
+                                nome: product.name,
+                                descricao: product.description,
+                                preco: product.price,
+                                categoria: product.category,
+                                status: product.status,
+                                imagem: product.image,
+                                avaliacao: product.rating,
+                                reviews: product.reviews
+                            }));
+                            loadProducts();
+                        })
+                        .catch(err => {
+                            console.error('Erro ao carregar produtos:', err);
+                            showNotification('Erro ao carregar produtos.', 'error');
+                        });
+                });
         }
 
         // Show section
@@ -630,8 +650,8 @@
                         <td class="px-6 py-4">${statusBadge}</td>
                         <td class="px-6 py-4 text-sm text-gray-700">⭐ ${parseFloat(product.avaliacao).toFixed(1)}</td>
                         <td class="px-6 py-4 text-right">
-                            <button onclick="editProduct(${product.id})" class="text-primary hover:text-primary-dark text-sm font-medium mr-3">✏️ Editar</button>
-                            <button onclick="deleteProduct(${product.id})" class="text-danger hover:text-red-700 text-sm font-medium">🗑️ Excluir</button>
+                            <button onclick="editProduct('${product.id}')" class="text-primary hover:text-primary-dark text-sm font-medium mr-3">✏️ Editar</button>
+                            <button onclick="deleteProduct('${product.id}')" class="text-danger hover:text-red-700 text-sm font-medium">🗑️ Excluir</button>
                         </td>
                     </tr>
                 `;
