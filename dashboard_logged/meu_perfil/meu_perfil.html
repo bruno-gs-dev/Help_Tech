@@ -141,6 +141,21 @@
     </div>
   </div>
 
+  <!-- Supabase client (UMD) + shared config to allow client-side profile fetch/upsert -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+  <script src="../../shared/supabase-config.js"></script>
+  <script>
+    if (window.SUPABASE_CONFIG && typeof supabase !== 'undefined') {
+      try {
+        window.SUPABASE_CLIENT = supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+        console.log('[supabase-config] SUPABASE_CLIENT created (meu_perfil)');
+      } catch (e) {
+        console.warn('[supabase-config] failed to create SUPABASE_CLIENT on meu_perfil', e);
+      }
+    }
+
+  </script>
+
   <script>
     // Ver o ID da sessão no console
     // console.log('ID da sessão:', <?php echo json_encode($_SESSION['user_id']); ?>);
@@ -197,7 +212,7 @@
     });
 
     // Função para carregar informações do banco de dados
-    function carregarInformacoesUsuario() {
+    async function carregarInformacoesUsuario() {
       // Read logged user from localStorage
       let store = null;
       try {
@@ -247,6 +262,50 @@
           console.warn('Error applying cached profile to UI', e);
         }
       }
+
+      // If a Supabase client is available and we have an authenticated user, try client-side fetch first
+      try {
+        let storeForClient = null;
+        try { storeForClient = JSON.parse(localStorage.getItem('user')) || null; } catch (e) { storeForClient = null; }
+        const authUserId = storeForClient && storeForClient.user && (storeForClient.user.id || storeForClient.user.uid) ? (storeForClient.user.id || storeForClient.user.uid) : null;
+        if (window.SUPABASE_CLIENT && authUserId) {
+          try {
+            const { data: p, error: pErr } = await window.SUPABASE_CLIENT.from('profiles').select('id,username,full_name,role,is_admin,metadata,image').eq('id', authUserId).maybeSingle();
+            if (!pErr && p) {
+              // Found profile via client — apply and return
+              const usuario = {
+                id: p.id,
+                name: p.full_name || p.username || (storeForClient && storeForClient.user && storeForClient.user.email) || '',
+                email: (p.metadata && p.metadata.email) || (storeForClient && storeForClient.user && storeForClient.user.email) || '',
+                phone: (p.metadata && (p.metadata.phone || p.metadata.phone_number)) || '',
+                birthdate: (p.metadata && p.metadata.birthdate) || null,
+                image: p.image || (p.metadata && (p.metadata.profile_pic || p.metadata.image || p.metadata.avatar)) || null
+              };
+
+              CURRENT_PROFILE_ID = usuario.id || authUserId;
+              // Apply UI updates (reuse code below)
+              document.getElementById('display-name').textContent = usuario.name || document.getElementById('display-name').textContent;
+              document.getElementById('display-email').textContent = usuario.email || document.getElementById('display-email').textContent;
+              document.getElementById('display-phone').textContent = usuario.phone || document.getElementById('display-phone').textContent;
+              if (usuario.birthdate) document.getElementById('display-birthdate').textContent = formatDate(usuario.birthdate);
+              if (usuario.image) {
+                const imgEl = document.getElementById('profile-image');
+                imgEl.src = usuario.image;
+                imgEl.classList.remove('hidden');
+                document.getElementById('profile-initial').classList.add('hidden');
+              }
+              if (usuario.name) document.getElementById('name').value = usuario.name;
+              if (usuario.email) document.getElementById('email').value = usuario.email;
+              if (usuario.phone) document.getElementById('phone').value = usuario.phone;
+              if (usuario.birthdate) document.getElementById('birthdate').value = formatDate(usuario.birthdate);
+              return; // done — no need to call server endpoints
+            }
+          } catch (e) {
+            console.warn('Client profile fetch failed, will fallback to server candidates', e);
+          }
+        }
+
+      } catch (e) { console.warn('Error checking client for profile', e); }
 
       // Build a list of candidate identifiers to try against the profiles table
       const candidates = [];
