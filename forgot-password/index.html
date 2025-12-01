@@ -11,11 +11,14 @@
 <body>
   <div class="container">
     <form class="form-box" id="resetForm">
+    <form class="form-box" id="resetForm">
       <h2>Redefinir Senha</h2>
       <p>Informe seu e-mail para receber o link de redefinição.</p>
 
       <label for="email">Email</label>
       <input type="email" id="email" name="email" placeholder="Digite seu email" required />
+
+      <p id="message" style="margin-top: 10px; font-size: 0.9em;"></p>
 
       <p id="message" style="margin-top: 10px; font-size: 0.9em;"></p>
 
@@ -61,7 +64,7 @@
 
         try {
             const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + '/dashboard_logged/meu_perfil/meu_perfil.html?reset=true',
+                redirectTo: window.location.origin + '/dashboard/profile/index.html?reset=true',
             });
 
             if (error) {

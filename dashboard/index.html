@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
     <script>
         tailwind.config =
         {
@@ -45,7 +45,7 @@
 
     <!-- Supabase JS (UMD) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-    <script src="../shared/supabase-config.js"></script>
+    <script src="../assets/js/shared/supabase-config.js"></script>
     <script>
         if (window.SUPABASE_CONFIG && window.supabase) {
             window.SUPABASE_CLIENT = supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
@@ -88,7 +88,7 @@
                             </button>
                             <!-- Profile Mobile -->
                              <button id="profileButtonMobile" class="flex items-center focus:outline-none ml-2" onclick="toggleProfileMenuMobile(event)">
-                                <img id="header-profile-img-mobile" src="./img/perfil_image.jpg" alt="Foto de perfil"
+                                <img id="header-profile-img-mobile" src="../assets/img/perfil_image.jpg" alt="Foto de perfil"
                                     class="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-primary transition-all duration-200 cursor-pointer">
                             </button>
                         </div>
@@ -123,7 +123,7 @@
                     <!-- Perfil do usuário (Desktop) -->
                     <div class="relative hidden lg:block">
                         <button id="profileButton" class="flex items-center focus:outline-none">
-                            <img id="header-profile-img" src="./img/perfil_image.jpg" alt="Foto de perfil"
+                            <img id="header-profile-img" src="../assets/img/perfil_image.jpg" alt="Foto de perfil"
                                 class="w-12 h-12 rounded-full border-2 border-gray-200 hover:border-primary transition-all duration-200 cursor-pointer object-cover">
                             <div id="header-profile-initial" class="hidden w-12 h-12 rounded-full border-2 border-gray-200 hover:border-primary transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold uppercase shadow-sm">
                                 <span>?</span>
@@ -131,11 +131,11 @@
                         </button>
                         <div id="profileMenu"
                             class="hidden absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-[60]">
-                            <a href="./meu_perfil/meu_perfil.html"
+                            <a href="./profile/index.html"
                                 class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">👤
                                 Meu
                                 Perfil</a>
-                            <a href="./area_administrativa/area_adm.html" data-requires-admin
+                            <a href="./admin/index.html" data-requires-admin
                                 class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">🔧
                                 Área
                                 Administrativa</a>
@@ -154,10 +154,10 @@
                             <div class="p-4 border-b border-gray-100 bg-gray-50">
                                 <span class="font-semibold text-gray-700">Menu do Usuário</span>
                             </div>
-                            <a href="./meu_perfil/meu_perfil.html"
+                            <a href="./profile/index.html"
                                 class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">👤
                                 Meu Perfil</a>
-                            <a href="./area_administrativa/area_adm.html" data-requires-admin
+                            <a href="./admin/index.html" data-requires-admin
                                 class="block px-4 py-3 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-all">🔧
                                 Área Administrativa</a>
                             <a href="#"
@@ -190,9 +190,9 @@
                             window.location.href = '../index.html';
                         }
                     </script>
-                                        <script src="/shared/auth-ui.js"></script>
+                                        <script src="../assets/js/shared/auth-ui.js"></script>
                                         <script>if (window.initAuthUI) initAuthUI();</script>
-                                        <script src="../shared/header_user.js"></script>
+                                        <script src="../assets/js/shared/header_user.js"></script>
                     <!---->
                 </div>
             </div>
@@ -222,6 +222,8 @@
                     <a href="#"
                         class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10">🔥
                         Promoções</a>
+                    <!--<a href="../login/index.html" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10">👤 Login</a>-->
+                    <!--<a href="../register/index.html" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10">✨ Registrar-se</a>-->
                     <!--<a href="../login/index.html" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10">👤 Login</a>-->
                     <!--<a href="../register/index.html" class="nav-item text-gray-600 no-underline px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap font-medium hover:text-primary hover:bg-primary/10">✨ Registrar-se</a>-->
                 </div>
@@ -484,7 +486,7 @@
         </div>
     </div>
 
-    <script src="../scripts/responsive-utils.js"></script>
+    <script src="../assets/js/utils/responsive.js"></script>
     <script>
         function toggleProfileMenuMobile(event) {
             if (event.target === event.currentTarget || event.currentTarget.id === 'profileButtonMobile' || event.currentTarget.closest('#profileButtonMobile')) {
