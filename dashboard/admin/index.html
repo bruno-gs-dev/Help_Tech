@@ -157,8 +157,7 @@
         </div>
     </header>
 
-    <!-- Supabase scripts loaded at start of body/head to ensure availability -->
-    <script src="../../assets/js/shared/auth-ui.js"></script>
+    <script src="/shared/auth-ui.js"></script>
     <script>if (window.initAuthUI) initAuthUI();</script>
 
     <div class="flex min-h-screen">
@@ -281,6 +280,8 @@
                 </div>
             </div>
 
+            <!-- Products Section -->
+            <!-- Products Section -->
             <!-- Products Section -->
             <div id="products-section" class="section hidden">
                 <div class="mb-8 flex justify-between items-center">
@@ -598,10 +599,14 @@
         </div>
     </div>
 
-    <script>
-        // CLIENT-SIDE ONLY LOGIC (HTML/JS) WITH SUPABASE INTEGRATION
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+    <script src="/supabase-config.js"></script>
 
-        // Local copy of products
+    <script>
+        // CLIENT-SIDE ONLY LOGIC (HTML/JS)
+        // CLIENT-SIDE ONLY LOGIC (HTML/JS)
+
+        // Sample products data
         let products = [];
         let editingProductId = null;
 
@@ -623,7 +628,8 @@
             'audio': '🎧'
         };
 
-        // Initialize from Supabase
+        // Initialize from LocalStorage or Supabase
+        // Initialize from LocalStorage or Supabase
         async function loadProductsFromDB() {
             try {
                 let list = [];
@@ -672,37 +678,15 @@
                     preco: Number(product.price || product.preco || 0),
                     categoria: product.category || product.categoria,
                     status: product.status || 'available',
-                    imagem: product.image || '',
-                    avaliacao: Number(product.rating || 0),
-                    reviews: Number(product.reviews || 0),
-                    period: product.period || 'dia'
+                    imagem: product.image || product.imagem || '',
+                    avaliacao: Number(product.rating || product.avaliacao || 0),
+                    reviews: Number(product.reviews || 0)
                 }));
 
                 loadProducts();
             } catch (error) {
                 console.error('[area_adm] Erro ao carregar produtos:', error);
-                showNotification('Erro ao carregar produtos do banco de dados.', 'error');
-
-                // Fallback attempt just in case (e.g. initial setup)
-                try {
-                     const r = await fetch('../../products.json?t=' + new Date().getTime());
-                     if(r.ok) {
-                         const data = await r.json();
-                         products = data.map(product => ({
-                            id: product.id,
-                            nome: product.name,
-                            descricao: product.description,
-                            preco: product.price,
-                            categoria: product.category,
-                            status: product.status,
-                            imagem: product.image,
-                            avaliacao: product.rating,
-                            reviews: product.reviews
-                         }));
-                         loadProducts();
-                         showNotification('Carregado backup local (offline)', 'warning');
-                     }
-                } catch(e) {}
+                showNotification('Erro ao carregar produtos.', 'error');
             }
         }
 
@@ -729,7 +713,7 @@
 
             // Load products if products section
             if (sectionName === 'products') {
-                loadProductsFromDB();
+                loadProducts();
             }
         }
 
@@ -743,9 +727,6 @@
                     ? '<span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">✅ Disponível</span>'
                     : '<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-semibold">❌ Alugado</span>';
 
-                // Safe ID for UUIDs
-                const idString = String(product.id);
-
                 const row = `
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4">
@@ -753,7 +734,7 @@
                                 <img src="${product.imagem ? product.imagem : ''}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'">
                                 <div>
                                     <div class="font-semibold text-gray-800 text-sm">${product.nome}</div>
-                                    <div class="text-xs text-gray-500 hidden sm:block" title="${idString}">ID: ...${idString.slice(-4)}</div>
+                                    <div class="text-xs text-gray-500">Produto ID: ${product.id}</div>
                                 </div>
                             </div>
                         </td>
@@ -802,35 +783,35 @@
         }
 
         // Delete product
-                async function deleteProduct(id) {
-                    if (confirm('Tem certeza que deseja excluir este produto?')) {
-                        try {
-                            // 1. Try Supabase delete
-                            if (window.SUPABASE_CLIENT && typeof window.SUPABASE_CLIENT.from === 'function') {
-                                const { error } = await window.SUPABASE_CLIENT
-                                    .from('products')
-                                    .delete()
-                                    .eq('id', id);
-        
-                                if (error) {
-                                    console.error('Supabase delete error:', error);
-                                    throw error;
-                                }
-                                console.log('Deleted from Supabase');
-                            }
-        
-                            // 2. Update local state (fallback/UI update)
-                            products = products.filter(p => String(p.id) !== String(id));
-                            localStorage.setItem('local_products', JSON.stringify(products));
-        
-                            showNotification('Produto excluído com sucesso!', 'success');
-                            await loadProductsFromDB(); // Reload to be sure
-                        } catch (err) {
-                            console.error('Error deleting product:', err);
-                            showNotification('Erro ao excluir produto: ' + (err && err.message ? err.message : err), 'error');
+        async function deleteProduct(id) {
+            if (confirm('Tem certeza que deseja excluir este produto?')) {
+                try {
+                    // 1. Try Supabase delete
+                    if (window.SUPABASE_CLIENT) {
+                        const { error } = await window.SUPABASE_CLIENT
+                            .from('products')
+                            .delete()
+                            .eq('id', id);
+                        
+                        if (error) {
+                            console.error('Supabase delete error:', error);
+                            throw error;
                         }
+                        console.log('Deleted from Supabase');
                     }
+
+                    // 2. Update local state (fallback/UI update)
+                    products = products.filter(p => String(p.id) !== String(id));
+                    localStorage.setItem('local_products', JSON.stringify(products));
+
+                    showNotification('Produto excluído com sucesso!', 'success');
+                    loadProductsFromDB(); // Reload to be sure
+                } catch (err) {
+                    console.error('Error deleting product:', err);
+                    showNotification('Erro ao excluir produto: ' + err.message, 'error');
                 }
+            }
+        }
 
         // Close product modal
         function closeProductModal() {
@@ -907,11 +888,14 @@
                     imagePreview.innerHTML = `<img src="${e.target.result}" class="image-preview" alt="Preview">`;
                     // Set value to base64 for local storage persistence
                     imageInput.value = e.target.result;
+                    // Set value to base64 for local storage persistence
+                    imageInput.value = e.target.result;
                 };
                 reader.readAsDataURL(file);
             });
 
-            // Carregar produtos do Supabase
+            // Carregar produtos
+            // Carregar produtos
             loadProductsFromDB();
 
             // Carregar dados do parceiro
@@ -919,14 +903,14 @@
         });
 
         // Handle form submission
-                document.getElementById('productForm').addEventListener('submit', async function (e) {
-                    e.preventDefault();
+        document.getElementById('productForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
 
             const name = document.getElementById('productName').value;
             const category = document.getElementById('productCategory').value;
-            const price = parseFloat(document.getElementById('productPrice').value);
+            const price = document.getElementById('productPrice').value;
             const status = document.getElementById('productStatus').value;
-            const rating = parseFloat(document.getElementById('productRating').value);
+            const rating = document.getElementById('productRating').value;
             const description = document.getElementById('productDescription').value;
             const image = document.getElementById('productImage').value;
 
@@ -1026,10 +1010,9 @@
             }, 3000);
         }
 
-        // Search products (client-side filter of loaded products)
+        // Search products
         document.getElementById('searchProduct').addEventListener('input', function (e) {
             const searchTerm = e.target.value.toLowerCase();
-            // Filter the local 'products' array which was populated from DB
             const filteredProducts = products.filter(p =>
                 p.nome.toLowerCase().includes(searchTerm) ||
                 p.descricao.toLowerCase().includes(searchTerm)
@@ -1051,7 +1034,7 @@
                                 <img src="${product.imagem}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover">
                                 <div>
                                     <div class="font-semibold text-gray-800 text-sm">${product.nome}</div>
-                                    <div class="text-xs text-gray-500">ID: ...${String(product.id).slice(-4)}</div>
+                                    <div class="text-xs text-gray-500">Produto ID: ${product.id}</div>
                                 </div>
                             </div>
                         </td>
