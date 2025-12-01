@@ -433,7 +433,7 @@
         // Funções para manipulação do carrinho
         function addToCart(productId) 
         {
-            const product = products.find(p => p.id === productId);
+            const product = products.find(p => String(p.id) === String(productId));
             if (product && product.status === 'available') 
             {
                 const quantity = productQuantities[productId] || 1;
@@ -592,12 +592,33 @@
                 alert('Seu carrinho está vazio!');
                 return;
             }
-            // Redireciona para a página de checkout
-            window.location.href = './checkout_pagamento/index.html';
-            alert('Redirecionando para a página de checkout...');
+
             closeCart();
             
+            // Show Success Modal with animation
+            const modal = document.getElementById('successModal');
+            const content = document.getElementById('successModalContent');
+            const progressBar = document.getElementById('redirectProgressBar');
             
+            if (modal && content && progressBar) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+
+                // Trigger animations
+                requestAnimationFrame(() => {
+                    content.classList.remove('scale-95', 'opacity-0', 'translate-y-4');
+                    content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+                    progressBar.style.width = '100%';
+                });
+
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = './checkout_pagamento/index.html';
+                }, 2000);
+            } else {
+                // Fallback if modal elements missing
+                window.location.href = './checkout_pagamento/index.html';
+            }
         }
 
         // Funções de filtro e ordenação
