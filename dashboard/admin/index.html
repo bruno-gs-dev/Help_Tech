@@ -102,8 +102,12 @@
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
@@ -276,6 +280,7 @@
                 </div>
             </div>
 
+            <!-- Products Section -->
             <!-- Products Section -->
             <!-- Products Section -->
             <div id="products-section" class="section hidden">
@@ -599,6 +604,7 @@
 
     <script>
         // CLIENT-SIDE ONLY LOGIC (HTML/JS)
+        // CLIENT-SIDE ONLY LOGIC (HTML/JS)
 
         // Sample products data
         let products = [];
@@ -623,6 +629,7 @@
         };
 
         // Initialize from LocalStorage or Supabase
+        // Initialize from LocalStorage or Supabase
         async function loadProductsFromDB() {
             try {
                 let list = [];
@@ -642,8 +649,24 @@
                     } catch (e) {
                         console.warn('Failed to load products.json', e);
                     }
+                // 1. Try LocalStorage "database" first (simulating backend)
+                const storedProducts = localStorage.getItem('local_products');
+                if (storedProducts) {
+                    list = JSON.parse(storedProducts);
+                    console.log('Loaded products from localStorage');
+                } else {
+                    // 2. Fallback to products.json
+                     try {
+                        const r = await fetch('../../products.json?t=' + new Date().getTime());
+                        const data = await r.json();
+                        list = data;
+                        console.log('Loaded products from products.json');
+                    } catch (e) {
+                        console.warn('Failed to load products.json', e);
+                    }
                 }
 
+                // Mapeia os campos
                 // Mapeia os campos
                 products = (list || []).map(product => ({
                     id: product.id,
@@ -700,6 +723,7 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
+                                <img src="${product.imagem ? product.imagem : ''}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'">
                                 <img src="${product.imagem ? product.imagem : ''}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'">
                                 <div>
                                     <div class="font-semibold text-gray-800 text-sm">${product.nome}</div>
@@ -761,6 +785,13 @@
 
                 showNotification('Produto excluído com sucesso!', 'success');
                 loadProducts();
+                // Client-side delete
+                products = products.filter(p => String(p.id) !== String(id));
+                // Persist to localStorage
+                localStorage.setItem('local_products', JSON.stringify(products));
+
+                showNotification('Produto excluído com sucesso!', 'success');
+                loadProducts();
             }
         }
 
@@ -770,7 +801,36 @@
         }
 
         // Carregar dados do parceiro (LocalStorage)
+        // Carregar dados do parceiro (LocalStorage)
         function loadPartnerSettings() {
+            const savedSettings = localStorage.getItem('partner_settings');
+            if (savedSettings) {
+                const partner = JSON.parse(savedSettings);
+                document.getElementById('partnerName').value = partner.nome || '';
+                document.getElementById('partnerCNPJ').value = partner.cnpj || '';
+                document.getElementById('partnerEmail').value = partner.email || '';
+                document.getElementById('partnerPhone').value = partner.telefone || '';
+                document.getElementById('partnerDescription').value = partner.descricao || '';
+                document.getElementById('partnerAddress').value = partner.endereco || '';
+            } else {
+                // Default info
+                const partnerData = {
+                    nome: 'HelPTech Aluguel de Tecnologia',
+                    cnpj: '12.345.678/0001-90',
+                    email: 'admin@helptech.com',
+                    telefone: '(11) 98765-4321',
+                    descricao: 'Empresa especializada em aluguel de equipamentos tecnológicos de alta qualidade.',
+                    endereco: 'Rua da Tecnologia, 123 - São Paulo, SP'
+                };
+
+                // Pre-fill
+                document.getElementById('partnerName').value = partnerData.nome;
+                document.getElementById('partnerCNPJ').value = partnerData.cnpj;
+                document.getElementById('partnerEmail').value = partnerData.email;
+                document.getElementById('partnerPhone').value = partnerData.telefone;
+                document.getElementById('partnerDescription').value = partnerData.descricao;
+                document.getElementById('partnerAddress').value = partnerData.endereco;
+            }
             const savedSettings = localStorage.getItem('partner_settings');
             if (savedSettings) {
                 const partner = JSON.parse(savedSettings);
@@ -802,7 +862,19 @@
         }
 
         // Salvar dados do parceiro (LocalStorage)
+        // Salvar dados do parceiro (LocalStorage)
         document.getElementById('saveSettingsBtn').addEventListener('click', function () {
+            const partnerData = {
+                nome: document.getElementById('partnerName').value,
+                cnpj: document.getElementById('partnerCNPJ').value,
+                email: document.getElementById('partnerEmail').value,
+                telefone: document.getElementById('partnerPhone').value,
+                descricao: document.getElementById('partnerDescription').value,
+                endereco: document.getElementById('partnerAddress').value
+            };
+
+            localStorage.setItem('partner_settings', JSON.stringify(partnerData));
+            showNotification('Configurações salvas com sucesso!', 'success');
             const partnerData = {
                 nome: document.getElementById('partnerName').value,
                 cnpj: document.getElementById('partnerCNPJ').value,
@@ -839,10 +911,13 @@
                     imagePreview.innerHTML = `<img src="${e.target.result}" class="image-preview" alt="Preview">`;
                     // Set value to base64 for local storage persistence
                     imageInput.value = e.target.result;
+                    // Set value to base64 for local storage persistence
+                    imageInput.value = e.target.result;
                 };
                 reader.readAsDataURL(file);
             });
 
+            // Carregar produtos
             // Carregar produtos
             loadProductsFromDB();
 
@@ -862,6 +937,51 @@
             const description = document.getElementById('productDescription').value;
             const image = document.getElementById('productImage').value;
 
+            const name = document.getElementById('productName').value;
+            const category = document.getElementById('productCategory').value;
+            const price = document.getElementById('productPrice').value;
+            const status = document.getElementById('productStatus').value;
+            const rating = document.getElementById('productRating').value;
+            const description = document.getElementById('productDescription').value;
+            const image = document.getElementById('productImage').value;
+
+            if (editingProductId) {
+                // Edit
+                const index = products.findIndex(p => String(p.id) === String(editingProductId));
+                if (index !== -1) {
+                    products[index] = {
+                        ...products[index],
+                        nome: name,
+                        categoria: category,
+                        preco: price,
+                        status: status,
+                        avaliacao: rating,
+                        descricao: description,
+                        imagem: image
+                    };
+                }
+            } else {
+                // Add
+                const newId = Date.now(); // Simple ID generation
+                products.push({
+                    id: newId,
+                    nome: name,
+                    categoria: category,
+                    preco: price,
+                    status: status,
+                    avaliacao: rating,
+                    descricao: description,
+                    imagem: image,
+                    reviews: 0
+                });
+            }
+
+            // Persist to localStorage
+            localStorage.setItem('local_products', JSON.stringify(products));
+
+            showNotification('Produto salvo com sucesso!', 'success');
+            closeProductModal();
+            loadProducts();
             if (editingProductId) {
                 // Edit
                 const index = products.findIndex(p => String(p.id) === String(editingProductId));
