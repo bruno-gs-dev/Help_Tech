@@ -802,36 +802,35 @@
         }
 
         // Delete product
-        async function deleteProduct(id) {
-        async function deleteProduct(id) {
-            if (confirm('Tem certeza que deseja excluir este produto?')) {
-                try {
-                    // 1. Try Supabase delete
-                    if (window.SUPABASE_CLIENT) {
-                        const { error } = await window.SUPABASE_CLIENT
-                            .from('products')
-                            .delete()
-                            .eq('id', id);
-                        
-                        if (error) {
-                            console.error('Supabase delete error:', error);
-                            throw error;
+                async function deleteProduct(id) {
+                    if (confirm('Tem certeza que deseja excluir este produto?')) {
+                        try {
+                            // 1. Try Supabase delete
+                            if (window.SUPABASE_CLIENT && typeof window.SUPABASE_CLIENT.from === 'function') {
+                                const { error } = await window.SUPABASE_CLIENT
+                                    .from('products')
+                                    .delete()
+                                    .eq('id', id);
+        
+                                if (error) {
+                                    console.error('Supabase delete error:', error);
+                                    throw error;
+                                }
+                                console.log('Deleted from Supabase');
+                            }
+        
+                            // 2. Update local state (fallback/UI update)
+                            products = products.filter(p => String(p.id) !== String(id));
+                            localStorage.setItem('local_products', JSON.stringify(products));
+        
+                            showNotification('Produto excluído com sucesso!', 'success');
+                            await loadProductsFromDB(); // Reload to be sure
+                        } catch (err) {
+                            console.error('Error deleting product:', err);
+                            showNotification('Erro ao excluir produto: ' + (err && err.message ? err.message : err), 'error');
                         }
-                        console.log('Deleted from Supabase');
                     }
-
-                    // 2. Update local state (fallback/UI update)
-                    products = products.filter(p => String(p.id) !== String(id));
-                    localStorage.setItem('local_products', JSON.stringify(products));
-
-                    showNotification('Produto excluído com sucesso!', 'success');
-                    loadProductsFromDB(); // Reload to be sure
-                } catch (err) {
-                    console.error('Error deleting product:', err);
-                    showNotification('Erro ao excluir produto: ' + err.message, 'error');
                 }
-            }
-        }
 
         // Close product modal
         function closeProductModal() {
@@ -920,9 +919,8 @@
         });
 
         // Handle form submission
-        document.getElementById('productForm').addEventListener('submit', async function (e) {
-        document.getElementById('productForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
+                document.getElementById('productForm').addEventListener('submit', async function (e) {
+                    e.preventDefault();
 
             const name = document.getElementById('productName').value;
             const category = document.getElementById('productCategory').value;
