@@ -353,7 +353,7 @@
                         </button>
 
                         <div class="text-center">
-                            <a href="../index.php" class="text-sm text-gray-600 hover:text-primary transition-colors duration-200">← Voltar ao carrinho</a>
+                            <a href="../index.html" class="text-sm text-gray-600 hover:text-primary transition-colors duration-200">← Voltar ao carrinho</a>
                         </div>
 
                         <div class="mt-6 pt-6 border-t border-gray-200 space-y-3">
@@ -480,55 +480,38 @@
             const valor = valorText.replace('R$', '').replace(',', '.').trim();
             formData.append('valor_total', valor);
             
-            // Enviar para o backend
-            fetch('processar_pagamento.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Pagamento processado com sucesso!', 'success');
-                    
-                    // Mostrar modal de sucesso
-                    document.getElementById('successModal').classList.remove('hidden');
-                    
-                    // Se for PIX, mostrar o QR Code gerado
-                    if (selectedPaymentMethod === 'pix' && data.qr_code) {
-                        const valorText = document.querySelector('.text-2xl.font-bold.text-primary').textContent.trim();
-                        const pixModal = document.createElement('div');
-                        pixModal.innerHTML = `
-                            <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[10001]" onclick="this.remove()">
-                                <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
-                                    <h3 class="text-2xl font-bold mb-4">Escaneie o QR Code Pix</h3>
-                                    <div class="mb-6">
-                                        <img src="./codigo_pix.jpg" alt="QR Code PIX" class="w-64 h-64 mx-auto">
-                                    </div>
-                                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                                        <p class="text-sm text-gray-600 mb-1">Valor a Pagar:</p>
-                                        <p class="text-3xl font-bold text-primary">${valorText}</p>
-                                    </div>
-                                    <p class="text-sm text-gray-500">Clique fora para fechar</p>
+            // Simulando processamento no frontend (sem backend PHP)
+            showNotification('Processando pagamento...', 'success');
+
+            // Simular delay de rede
+            setTimeout(() => {
+                showNotification('Pagamento processado com sucesso!', 'success');
+
+                // Mostrar modal de sucesso
+                document.getElementById('successModal').classList.remove('hidden');
+
+                // Se for PIX, mostrar o QR Code gerado (mockup)
+                if (selectedPaymentMethod === 'pix') {
+                    const valorText = document.querySelector('.text-2xl.font-bold.text-primary').textContent.trim();
+                    const pixModal = document.createElement('div');
+                    pixModal.innerHTML = `
+                        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[10001]" onclick="this.remove()">
+                            <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+                                <h3 class="text-2xl font-bold mb-4">Escaneie o QR Code Pix</h3>
+                                <div class="mb-6">
+                                    <img src="./codigo_pix.jpg" alt="QR Code PIX" class="w-64 h-64 mx-auto">
                                 </div>
+                                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                    <p class="text-sm text-gray-600 mb-1">Valor a Pagar:</p>
+                                    <p class="text-3xl font-bold text-primary">${valorText}</p>
+                                </div>
+                                <p class="text-sm text-gray-500">Clique fora para fechar</p>
                             </div>
-                        `;
-                        document.body.appendChild(pixModal);
-                    }
-                    
-                    // Se for boleto, gerar link de download
-                    if (selectedPaymentMethod === 'boleto' && data.boleto_url) {
-                        setTimeout(() => {
-                            window.open(data.boleto_url, '_blank');
-                        }, 1000);
-                    }
-                } else {
-                    showNotification(data.message || 'Erro ao processar pagamento', 'error');
+                        </div>
+                    `;
+                    document.body.appendChild(pixModal);
                 }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                showNotification('Erro ao processar pagamento', 'error');
-            });
+            }, 1500);
         }
 
         function closeSuccessModal() {
