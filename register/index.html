@@ -619,7 +619,7 @@
 
     <!-- Supabase JS (UMD) and config for client-side registration -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-    <script src="../../shared/supabase-config.js"></script>
+    <script src="../assets/js/shared/supabase-config.js"></script>
     <script>
         if (window.SUPABASE_CONFIG && window.supabase) {
             try {
@@ -682,11 +682,6 @@
             document.querySelectorAll('.field-error').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.input--style-4').forEach(el => el.classList.remove('input-error'));
             document.getElementById('mainError').style.display = 'none';
-
-            // API Base URL - Detecta automaticamente se está em produção ou desenvolvimento
-            const API_BASE_URL = window.location.hostname === 'localhost'
-                ? 'http://localhost:3000/api'
-                : '/api';
 
             // Converter FormData para JSON
             const formDataObj = {};
@@ -773,57 +768,9 @@
                 }
             }
 
-            // Fallback: use existing server-side auth endpoint
-            fetch(`${API_BASE_URL}/auth`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formDataObj)
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Registro bem-sucedido
-                        fecharModal(); // Fecha o modal de termos
-
-                        // Abre o modal de sucesso
-                        document.getElementById('successModal').classList.add('show');
-
-                        // Redireciona após 2.5 segundos
-                        setTimeout(function () {
-                            window.location.href = '../login/index.html';
-                        }, 2500);
-                    } else {
-                        // Erro no registro
-                        fecharModal();
-
-                        // Exibir erro geral
-                        const mainError = document.getElementById('mainError');
-                        mainError.innerText = data.message;
-                        mainError.style.display = 'block';
-
-                        // Tentar mapear erros para campos específicos
-                        const msg = data.message.toLowerCase();
-
-                        if (msg.includes('primeiro nome')) mostrarErroCampo('first_name', 'Primeiro nome é obrigatório');
-                        if (msg.includes('sobrenome')) mostrarErroCampo('last_name', 'Sobrenome é obrigatório');
-                        if (msg.includes('email')) mostrarErroCampo('email', msg.includes('inválido') ? 'Email inválido' : 'Email já cadastrado ou obrigatório');
-                        if (msg.includes('senha')) mostrarErroCampo('password', 'Senha inválida (min 6 caracteres)');
-                        if (msg.includes('telefone')) mostrarErroCampo('phone', msg.includes('cadastrado') ? 'Telefone já cadastrado' : 'Telefone é obrigatório');
-                        if (msg.includes('nascimento') || msg.includes('birthday')) mostrarErroCampo('birthday', 'Data de nascimento obrigatória');
-
-                        // Auto-hide error after 5 seconds
-                        setTimeout(function () {
-                            mainError.style.display = 'none';
-                        }, 5000);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    fecharModal();
-                    alert('Erro ao processar o cadastro. Verifique o console.');
-                });
+            console.error("Supabase client not found. Please check supabase-config.js.");
+            fecharModal();
+            alert("Erro de configuração: Cliente Supabase não encontrado. Verifique se o arquivo de configuração existe e está correto.");
         }
 
         function mostrarErroCampo(id, mensagem) {

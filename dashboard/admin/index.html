@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,44 +31,35 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
-
         .logo-gradient {
             background: linear-gradient(135deg, #6366f1 0%, #10b981 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
         .btn-gradient-primary {
             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
         }
-
         .btn-gradient-danger {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
         }
-
         .btn-gradient-secondary {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         }
-
         .glass-effect {
             backdrop-filter: blur(20px);
         }
-
         .stat-card {
             transition: all 0.3s ease;
         }
-
         .stat-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-
         .sidebar-link {
             position: relative;
             overflow: hidden;
         }
-
         .sidebar-link::before {
             content: '';
             position: absolute;
@@ -81,18 +71,15 @@
             transform: translateX(-100%);
             transition: transform 0.3s ease;
         }
-
         .sidebar-link.active::before,
         .sidebar-link:hover::before {
             transform: translateX(0);
         }
-
         .sidebar-link.active {
             background: rgba(99, 102, 241, 0.1);
             color: #6366f1;
             font-weight: 600;
         }
-
         .modal {
             display: none;
             position: fixed;
@@ -104,39 +91,22 @@
             z-index: 9999;
             animation: fadeIn 0.2s ease;
         }
-
         .modal.show {
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
         .modal-content {
             animation: slideIn 0.3s ease;
         }
-
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
         .image-preview {
             width: 100%;
             height: 200px;
@@ -149,6 +119,15 @@
         const user = localStorage.getItem('user');
         if (!user) {
             window.location.href = '../../login/index.html';
+        }
+    </script>
+
+    <!-- Supabase JS (UMD) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+    <script src="../../assets/js/shared/supabase-config.js"></script>
+    <script>
+        if (window.SUPABASE_CONFIG && window.supabase) {
+            window.SUPABASE_CLIENT = supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
         }
     </script>
 </head>
@@ -167,7 +146,7 @@
                         <div id="admin-name" class="text-sm font-semibold text-gray-800">Parceiro Admin</div>
                         <div id="admin-email" class="text-xs text-gray-500">admin@helptech.com</div>
                     </div>
-                    <img id="admin-profile-img" src="../img/perfil_image.jpg" alt="Admin"
+                    <img id="admin-profile-img" src="../../assets/img/perfil_image.jpg" alt="Admin"
                         class="w-10 h-10 rounded-full border-2 border-primary">
                 </div>
             </div>
@@ -297,6 +276,7 @@
                 </div>
             </div>
 
+            <!-- Products Section -->
             <!-- Products Section -->
             <div id="products-section" class="section hidden">
                 <div class="mb-8 flex justify-between items-center">
@@ -618,17 +598,10 @@
     <script src="/supabase-config.js"></script>
 
     <script>
-        // API Base URL - Detecta automaticamente se está em produção ou desenvolvimento
-        const API_BASE_URL = window.location.hostname === 'localhost'
-            ? 'http://localhost:3000/api'
-            : '/api';
-
-        // Fallback image (inline SVG) para quando não houver imagem
-        const IMAGE_FALLBACK = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+';
+        // CLIENT-SIDE ONLY LOGIC (HTML/JS)
 
         // Sample products data
         let products = [];
-
         let editingProductId = null;
 
         // Category names mapping
@@ -649,42 +622,29 @@
             'audio': '🎧'
         };
 
-        // Carregar produtos: tenta Supabase client (client-side) -> API -> products.json
+        // Initialize from LocalStorage or Supabase
         async function loadProductsFromDB() {
             try {
                 let list = [];
 
-                if (window.SUPABASE_CLIENT) {
-                    try {
-                        const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*').order('created_at', { ascending: false });
-                        if (error) throw error;
-                        list = Array.isArray(data) ? data : [];
-                        console.log('[area_adm] loaded products directly from SUPABASE_CLIENT, count:', list.length);
-                    } catch (err) {
-                        console.warn('[area_adm] erro ao buscar direto no SUPABASE_CLIENT, fallback para API:', err.message || err);
+                // 1. Try LocalStorage "database" first (simulating backend)
+                const storedProducts = localStorage.getItem('local_products');
+                if (storedProducts) {
+                    list = JSON.parse(storedProducts);
+                    console.log('Loaded products from localStorage');
+                } else {
+                    // 2. Fallback to products.json
+                     try {
+                        const r = await fetch('../../products.json?t=' + new Date().getTime());
+                        const data = await r.json();
+                        list = data;
+                        console.log('Loaded products from products.json');
+                    } catch (e) {
+                        console.warn('Failed to load products.json', e);
                     }
                 }
 
-                if (!list || list.length === 0) {
-                    // Try serverless API
-                    try {
-                        const resp = await fetch(API_BASE_URL + '/products?t=' + new Date().getTime());
-                        const payload = await resp.json();
-                        console.log('[area_adm] /api/products response payload:', payload);
-                        list = payload && payload.data ? payload.data : payload;
-                    } catch (err) {
-                        console.warn('[area_adm] erro ao buscar /api/products, fallback local:', err.message || err);
-                    }
-                }
-
-                if (!list || list.length === 0) {
-                    const r = await fetch('../../products.json?t=' + new Date().getTime());
-                    const data = await r.json();
-                    console.log('[area_adm] fallback products.json loaded, count:', Array.isArray(data) ? data.length : 0);
-                    list = data;
-                }
-
-                // Mapeia os campos do JSON (inglês) para os campos esperados (português)
+                // Mapeia os campos
                 products = (list || []).map(product => ({
                     id: product.id,
                     nome: product.name || product.nome,
@@ -740,7 +700,7 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <img src="${product.imagem ? product.imagem : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'">
+                                <img src="${product.imagem ? product.imagem : ''}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'">
                                 <div>
                                     <div class="font-semibold text-gray-800 text-sm">${product.nome}</div>
                                     <div class="text-xs text-gray-500">Produto ID: ${product.id}</div>
@@ -794,29 +754,13 @@
         // Delete product
         function deleteProduct(id) {
             if (confirm('Tem certeza que deseja excluir este produto?')) {
-                fetch(`${API_BASE_URL}/alterar_informacoes`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'delete',
-                        id: id
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            showNotification(data.message, 'success');
-                            loadProductsFromDB();
-                        } else {
-                            showNotification(data.message, 'error');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erro:', error);
-                        showNotification('Erro ao excluir produto.', 'error');
-                    });
+                // Client-side delete
+                products = products.filter(p => String(p.id) !== String(id));
+                // Persist to localStorage
+                localStorage.setItem('local_products', JSON.stringify(products));
+
+                showNotification('Produto excluído com sucesso!', 'success');
+                loadProducts();
             }
         }
 
@@ -825,67 +769,51 @@
             document.getElementById('productModal').classList.remove('show');
         }
 
-        // Carregar dados do parceiro nas configurações
+        // Carregar dados do parceiro (LocalStorage)
         function loadPartnerSettings() {
-            fetch(`${API_BASE_URL}/capturar_informacoes`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'partner-info'
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.data) {
-                        const partner = data.data;
-                        document.getElementById('partnerName').value = partner.nome || '';
-                        document.getElementById('partnerCNPJ').value = partner.cnpj || '';
-                        document.getElementById('partnerEmail').value = partner.email || '';
-                        document.getElementById('partnerPhone').value = partner.telefone || '';
-                        document.getElementById('partnerDescription').value = partner.descricao || '';
-                        document.getElementById('partnerAddress').value = partner.endereco || '';
-                    } else {
-                        console.error('Erro ao carregar dados do parceiro:', data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    showNotification('Erro ao carregar configurações.', 'error');
-                });
+            const savedSettings = localStorage.getItem('partner_settings');
+            if (savedSettings) {
+                const partner = JSON.parse(savedSettings);
+                document.getElementById('partnerName').value = partner.nome || '';
+                document.getElementById('partnerCNPJ').value = partner.cnpj || '';
+                document.getElementById('partnerEmail').value = partner.email || '';
+                document.getElementById('partnerPhone').value = partner.telefone || '';
+                document.getElementById('partnerDescription').value = partner.descricao || '';
+                document.getElementById('partnerAddress').value = partner.endereco || '';
+            } else {
+                // Default info
+                const partnerData = {
+                    nome: 'HelPTech Aluguel de Tecnologia',
+                    cnpj: '12.345.678/0001-90',
+                    email: 'admin@helptech.com',
+                    telefone: '(11) 98765-4321',
+                    descricao: 'Empresa especializada em aluguel de equipamentos tecnológicos de alta qualidade.',
+                    endereco: 'Rua da Tecnologia, 123 - São Paulo, SP'
+                };
+
+                // Pre-fill
+                document.getElementById('partnerName').value = partnerData.nome;
+                document.getElementById('partnerCNPJ').value = partnerData.cnpj;
+                document.getElementById('partnerEmail').value = partnerData.email;
+                document.getElementById('partnerPhone').value = partnerData.telefone;
+                document.getElementById('partnerDescription').value = partnerData.descricao;
+                document.getElementById('partnerAddress').value = partnerData.endereco;
+            }
         }
 
-        // Salvar dados do parceiro
+        // Salvar dados do parceiro (LocalStorage)
         document.getElementById('saveSettingsBtn').addEventListener('click', function () {
-            fetch(`${API_BASE_URL}/alterar_informacoes`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'update-partner',
-                    nome: document.getElementById('partnerName').value,
-                    cnpj: document.getElementById('partnerCNPJ').value,
-                    email: document.getElementById('partnerEmail').value,
-                    telefone: document.getElementById('partnerPhone').value,
-                    descricao: document.getElementById('partnerDescription').value,
-                    endereco: document.getElementById('partnerAddress').value
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification(data.message, 'success');
-                        loadPartnerSettings();
-                    } else {
-                        showNotification(data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    showNotification('Erro ao salvar configurações.', 'error');
-                });
+            const partnerData = {
+                nome: document.getElementById('partnerName').value,
+                cnpj: document.getElementById('partnerCNPJ').value,
+                email: document.getElementById('partnerEmail').value,
+                telefone: document.getElementById('partnerPhone').value,
+                descricao: document.getElementById('partnerDescription').value,
+                endereco: document.getElementById('partnerAddress').value
+            };
+
+            localStorage.setItem('partner_settings', JSON.stringify(partnerData));
+            showNotification('Configurações salvas com sucesso!', 'success');
         });
 
         // Image preview on URL input
@@ -909,13 +837,13 @@
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     imagePreview.innerHTML = `<img src="${e.target.result}" class="image-preview" alt="Preview">`;
-                    // clear URL field when a file is chosen
-                    imageInput.value = '';
+                    // Set value to base64 for local storage persistence
+                    imageInput.value = e.target.result;
                 };
                 reader.readAsDataURL(file);
             });
 
-            // Carregar produtos do banco de dados
+            // Carregar produtos
             loadProductsFromDB();
 
             // Carregar dados do parceiro
@@ -925,58 +853,52 @@
         // Handle form submission
         document.getElementById('productForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            (async () => {
-                try {
-                    const productData = {
-                        action: editingProductId ? 'edit' : 'add',
-                        name: document.getElementById('productName').value,
-                        category: document.getElementById('productCategory').value,
-                        price: document.getElementById('productPrice').value,
-                        status: document.getElementById('productStatus').value,
-                        rating: document.getElementById('productRating').value,
-                        description: document.getElementById('productDescription').value,
-                        image: document.getElementById('productImage').value
+
+            const name = document.getElementById('productName').value;
+            const category = document.getElementById('productCategory').value;
+            const price = document.getElementById('productPrice').value;
+            const status = document.getElementById('productStatus').value;
+            const rating = document.getElementById('productRating').value;
+            const description = document.getElementById('productDescription').value;
+            const image = document.getElementById('productImage').value;
+
+            if (editingProductId) {
+                // Edit
+                const index = products.findIndex(p => String(p.id) === String(editingProductId));
+                if (index !== -1) {
+                    products[index] = {
+                        ...products[index],
+                        nome: name,
+                        categoria: category,
+                        preco: price,
+                        status: status,
+                        avaliacao: rating,
+                        descricao: description,
+                        imagem: image
                     };
-
-                    if (editingProductId) {
-                        productData.id = editingProductId;
-                    }
-
-                    // If a file is selected, upload it first to /api/upload
-                    const fileInput = document.getElementById('productImageFile');
-                    if (fileInput && fileInput.files && fileInput.files.length > 0) {
-                        const file = fileInput.files[0];
-                        const arrayBuffer = await file.arrayBuffer();
-                        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-                        const upResp = await fetch('/api/upload', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ filename: file.name, content: base64, contentType: file.type })
-                        });
-                        const upJson = await upResp.json();
-                        if (!upJson.success) throw new Error(upJson.message || 'Upload failed');
-                        productData.image = upJson.publicURL;
-                    }
-
-                    const resp = await fetch(`${API_BASE_URL}/alterar_informacoes`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(productData)
-                    });
-                    const data = await resp.json();
-                    if (data.success) {
-                        showNotification(data.message, 'success');
-                        closeProductModal();
-                        loadProductsFromDB();
-                    } else {
-                        showNotification(data.message, 'error');
-                    }
-                } catch (error) {
-                    console.error('Erro:', error);
-                    showNotification('Erro ao salvar produto.', 'error');
                 }
-            })();
+            } else {
+                // Add
+                const newId = Date.now(); // Simple ID generation
+                products.push({
+                    id: newId,
+                    nome: name,
+                    categoria: category,
+                    preco: price,
+                    status: status,
+                    avaliacao: rating,
+                    descricao: description,
+                    imagem: image,
+                    reviews: 0
+                });
+            }
+
+            // Persist to localStorage
+            localStorage.setItem('local_products', JSON.stringify(products));
+
+            showNotification('Produto salvo com sucesso!', 'success');
+            closeProductModal();
+            loadProducts();
         });
 
         // Show notification

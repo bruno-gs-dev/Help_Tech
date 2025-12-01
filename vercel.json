@@ -15,16 +15,16 @@
             "destination": "/forgot-password/index.html"
         },
         {
-            "source": "/dashboard_logged",
-            "destination": "/dashboard_logged/index.html"
+            "source": "/dashboard",
+            "destination": "/dashboard/index.html"
         },
         {
-            "source": "/dashboard_logged/area_administrativa",
-            "destination": "/dashboard_logged/area_administrativa/area_adm.html"
+            "source": "/dashboard/admin",
+            "destination": "/dashboard/admin/index.html"
         },
         {
-            "source": "/dashboard_logged/meu_perfil",
-            "destination": "/dashboard_logged/meu_perfil/meu_perfil.html"
+            "source": "/dashboard/profile",
+            "destination": "/dashboard/profile/index.html"
         },
         {
             "source": "/api/(.*)",

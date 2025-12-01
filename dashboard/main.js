@@ -8,7 +8,7 @@
                 period: "dia",
                 status: "available",
                 description: "Notebook profissional para edição de vídeo e desenvolvimento",
-                image: "./img/macbook.jpg",
+                image: "../assets/img/macbook.jpg",
                 rating: 4.8,
                 reviews: 127
             },
@@ -20,7 +20,7 @@
                 period: "dia",
                 status: "available",
                 description: "Câmera mirrorless full-frame profissional com estabilização",
-                image: "./img/camera_canon.jpg",
+                image: "../assets/img/camera_canon.jpg",
                 rating: 4.9,
                 reviews: 89
             },
@@ -32,7 +32,7 @@
                 period: "dia",
                 status: "rented",
                 description: "Console next-gen com jogos exclusivos e ray tracing",
-                image: "./img/ps5.jpg",
+                image: "../assets/img/ps5.jpg",
                 rating: 4.7,
                 reviews: 234
             },
@@ -44,7 +44,7 @@
                 period: "dia",
                 status: "available",
                 description: "Smartphone premium com câmera profissional ProRAW",
-                image: "./img/iphone.jpg",
+                image: "../assets/img/iphone.jpg",
                 rating: 4.6,
                 reviews: 156
             },
@@ -56,7 +56,7 @@
                 period: "dia",
                 status: "available",
                 description: "A Samsung apresenta o mais novo lançamento da linha S. Seu verdadeiro aliado AI",
-                image: "./img/samsung.png",
+                image: "../assets/img/samsung.png",
                 rating: 4.9,
                 reviews: 67
             },
@@ -68,7 +68,7 @@
                 period: "dia",
                 status: "available",
                 description: "Console 4K com acesso a mais de 100 jogos",
-                image: "./img/xbox.png",
+                image: "../assets/img/xbox.png",
                 rating: 4.5,
                 reviews: 198
             },
@@ -80,7 +80,7 @@
                 period: "dia",
                 status: "available",
                 description: "Ultrabook premium com tela OLED 4K e design sem bordas",
-                image: "./img/dell.jpg",
+                image: "../assets/img/dell.jpg",
                 rating: 4.4,
                 reviews: 94
             },
@@ -92,7 +92,7 @@
                 period: "dia",
                 status: "available",
                 description: "Console híbrido com tela OLED e biblioteca completa de jogos",
-                image: "./img/switch.jpg",
+                image: "../assets/img/switch.jpg",
                 rating: 4.6,
                 reviews: 267
             }
@@ -613,11 +613,11 @@
 
                 // Redirect after delay
                 setTimeout(() => {
-                    window.location.href = './checkout_pagamento/index.html';
+                    window.location.href = './checkout/index.html';
                 }, 2000);
             } else {
                 // Fallback if modal elements missing
-                window.location.href = './checkout_pagamento/index.html';
+                window.location.href = './checkout/index.html';
             }
         }
 
