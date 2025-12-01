@@ -103,6 +103,14 @@ export default async function handler(req, res) {
             if (req.body.first_name) user_metadata.first_name = req.body.first_name;
             if (req.body.last_name) user_metadata.last_name = req.body.last_name;
 
+            // Generate full_name and username if not present
+            if (!user_metadata.full_name && (user_metadata.first_name || user_metadata.last_name)) {
+                user_metadata.full_name = ((user_metadata.first_name || '') + ' ' + (user_metadata.last_name || '')).trim();
+            }
+            if (!user_metadata.username && email) {
+                user_metadata.username = email.split('@')[0];
+            }
+
             if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
                 // Ensure fetch is available (Node <18 environments)
                 if (typeof fetch === 'undefined') {
