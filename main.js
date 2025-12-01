@@ -36,37 +36,62 @@ async function loadProducts() {
         // Se você quiser usar o cliente Supabase direto no cliente, defina window.FORCE_API_FOR_HOME = false
         const FORCE_API_FOR_HOME = (window.FORCE_API_FOR_HOME === undefined) ? true : Boolean(window.FORCE_API_FOR_HOME);
 
-        // Primeiro tenta carregar diretamente do Supabase client (client-side) se estiver configurado
-        if (!FORCE_API_FOR_HOME && window.SUPABASE_CLIENT) {
-            try {
+        // Tenta carregar do Supabase Client primeiro (se disponível)
+        if (window.SUPABASE_CLIENT) {
+             try {
                 const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
                 products = Array.isArray(data) ? data : [];
-                    console.log('[main] loaded products directly from SUPABASE_CLIENT, count:', products.length);
-            } catch (e) {
-                console.warn('[main] erro ao buscar direto no Supabase client, tentando /api/products fallback:', e.message || e);
-                // fallback para endpoint serverless
-                let response;
-                try {
-                    response = await fetch(API_BASE_URL + '/products?t=' + new Date().getTime());
-                } catch (err) {
-                    response = null;
-                }
-
-                if (!response || !response.ok) {
-                    // fallback para arquivo estático
-                    const fallback = await fetch('products.json?t=' + new Date().getTime());
-                    if (!fallback.ok) throw new Error('Não foi possível carregar os produtos do servidor nem do arquivo local');
-                    products = await fallback.json();
-                        console.log('[main] loaded products from products.json, count:', Array.isArray(products) ? products.length : 0);
-                } else {
-                    const body = await response.json();
-                    products = body && body.data ? body.data : [];
-                    console.log('[main] loaded products from ' + API_BASE_URL + '/products, count:', Array.isArray(products) ? products.length : 0, ' body:', body);
-                }
+                console.log('[main] loaded products directly from SUPABASE_CLIENT, count:', products.length);
+            } catch(e) {
+                 console.warn('[main] Supabase client load failed, using fallback', e);
+                 // Fallback flow
+                 await loadFromApiOrJson(API_BASE_URL);
             }
         } else {
             // Sem cliente Supabase, usa API serverless e depois fallback local
+            await loadFromApiOrJson(API_BASE_URL);
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        const grid = document.getElementById('productsGrid');
+        if (grid) {
+            grid.innerHTML = `
+                <div class="col-span-full text-center py-16 text-red-500">
+                    <h3 class="text-xl font-bold">Erro de conexão</h3>
+                    <p>Não foi possível carregar os produtos do servidor. Verifique se o arquivo products.json existe.</p>
+                </div>
+            `;
+        }
+    }
+
+    // Inicializa a lista filtrada com todos os produtos
+    filteredProducts = [...products];
+
+    // Inicializa as quantidades e períodos padrão para cada produto carregado
+    products.forEach(product => {
+        productQuantities[product.id] = 1;
+        productPeriods[product.id] = 1;
+    });
+
+    // Renderiza a tela inicial
+    renderProducts();
+
+    // Após renderizar, atualiza os preços iniciais na interface
+    setTimeout(() => {
+        products.forEach(product => {
+            if (product.status === 'available') {
+                updateProductPrice(product.id);
+                // Desabilita o botão de menos inicialmente
+                const minusBtn = document.querySelector(`[onclick="changeQuantity('${product.id}', -1)"]`);
+                if (minusBtn) minusBtn.disabled = true;
+            }
+        });
+    }, 100);
+}
+
+// Helper para fallback
+async function loadFromApiOrJson(API_BASE_URL) {
             let response;
             try {
                 response = await fetch(API_BASE_URL + '/products?t=' + new Date().getTime());
@@ -84,44 +109,6 @@ async function loadProducts() {
                     products = body && body.data ? body.data : [];
                     console.log('[main] loaded products from ' + API_BASE_URL + '/products, count:', Array.isArray(products) ? products.length : 0, ' body:', body);
             }
-        }
-
-        // Inicializa a lista filtrada com todos os produtos
-        filteredProducts = [...products];
-
-        // Inicializa as quantidades e períodos padrão para cada produto carregado
-        products.forEach(product => {
-            productQuantities[product.id] = 1;
-            productPeriods[product.id] = 1;
-        });
-
-        // Renderiza a tela inicial
-        renderProducts();
-
-        // Após renderizar, atualiza os preços iniciais na interface
-        setTimeout(() => {
-            products.forEach(product => {
-                if (product.status === 'available') {
-                    updateProductPrice(product.id);
-                    // Desabilita o botão de menos inicialmente
-                    const minusBtn = document.querySelector(`[onclick="changeQuantity('${product.id}', -1)"]`);
-                    if (minusBtn) minusBtn.disabled = true;
-                }
-            });
-        }, 100);
-
-    } catch (error) {
-        console.error('Erro:', error);
-        const grid = document.getElementById('productsGrid');
-        if (grid) {
-            grid.innerHTML = `
-                <div class="col-span-full text-center py-16 text-red-500">
-                    <h3 class="text-xl font-bold">Erro de conexão</h3>
-                    <p>Não foi possível carregar os produtos do servidor. Verifique se o arquivo products.json existe.</p>
-                </div>
-            `;
-        }
-    }
 }
 
 // Helper para gerar IDs válidos no DOM a partir de UUIDs/strings
@@ -612,4 +599,3 @@ document.addEventListener('DOMContentLoaded', () => {
         loginLink.parentNode.appendChild(logoutLink);
     }
 });
-

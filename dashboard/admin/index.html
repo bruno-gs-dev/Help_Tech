@@ -157,7 +157,8 @@
         </div>
     </header>
 
-    <script src="/shared/auth-ui.js"></script>
+    <!-- Supabase scripts loaded at start of body/head to ensure availability -->
+    <script src="../../assets/js/shared/auth-ui.js"></script>
     <script>if (window.initAuthUI) initAuthUI();</script>
 
     <div class="flex min-h-screen">
@@ -280,8 +281,6 @@
                 </div>
             </div>
 
-            <!-- Products Section -->
-            <!-- Products Section -->
             <!-- Products Section -->
             <div id="products-section" class="section hidden">
                 <div class="mb-8 flex justify-between items-center">
@@ -599,14 +598,10 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-    <script src="/supabase-config.js"></script>
-
     <script>
-        // CLIENT-SIDE ONLY LOGIC (HTML/JS)
-        // CLIENT-SIDE ONLY LOGIC (HTML/JS)
+        // CLIENT-SIDE ONLY LOGIC (HTML/JS) WITH SUPABASE INTEGRATION
 
-        // Sample products data
+        // Local copy of products
         let products = [];
         let editingProductId = null;
 
@@ -628,62 +623,62 @@
             'audio': '🎧'
         };
 
-        // Initialize from LocalStorage or Supabase
-        // Initialize from LocalStorage or Supabase
+        // Initialize from Supabase
         async function loadProductsFromDB() {
             try {
-                let list = [];
-
-                // 1. Try LocalStorage "database" first (simulating backend)
-                const storedProducts = localStorage.getItem('local_products');
-                if (storedProducts) {
-                    list = JSON.parse(storedProducts);
-                    console.log('Loaded products from localStorage');
-                } else {
-                    // 2. Fallback to products.json
-                     try {
-                        const r = await fetch('../../products.json?t=' + new Date().getTime());
-                        const data = await r.json();
-                        list = data;
-                        console.log('Loaded products from products.json');
-                    } catch (e) {
-                        console.warn('Failed to load products.json', e);
-                    }
-                // 1. Try LocalStorage "database" first (simulating backend)
-                const storedProducts = localStorage.getItem('local_products');
-                if (storedProducts) {
-                    list = JSON.parse(storedProducts);
-                    console.log('Loaded products from localStorage');
-                } else {
-                    // 2. Fallback to products.json
-                     try {
-                        const r = await fetch('../../products.json?t=' + new Date().getTime());
-                        const data = await r.json();
-                        list = data;
-                        console.log('Loaded products from products.json');
-                    } catch (e) {
-                        console.warn('Failed to load products.json', e);
-                    }
+                if (!window.SUPABASE_CLIENT) {
+                    throw new Error('Supabase Client not initialized');
                 }
 
-                // Mapeia os campos
-                // Mapeia os campos
-                products = (list || []).map(product => ({
+                // Fetch directly from 'products' table
+                const { data, error } = await window.SUPABASE_CLIENT
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Mapeia os campos do DB para o formato interno (se necessário)
+                // O DB usa: name, description, price, category, status, image, rating, reviews
+                // O app usa internamente os mesmos ou similares. Vamos padronizar aqui.
+                products = (data || []).map(product => ({
                     id: product.id,
-                    nome: product.name || product.nome,
-                    descricao: product.description || product.descricao || '',
-                    preco: Number(product.price || product.preco || 0),
-                    categoria: product.category || product.categoria,
+                    nome: product.name,
+                    descricao: product.description || '',
+                    preco: Number(product.price),
+                    categoria: product.category,
                     status: product.status || 'available',
-                    imagem: product.image || product.imagem || '',
-                    avaliacao: Number(product.rating || product.avaliacao || 0),
-                    reviews: Number(product.reviews || 0)
+                    imagem: product.image || '',
+                    avaliacao: Number(product.rating || 0),
+                    reviews: Number(product.reviews || 0),
+                    period: product.period || 'dia'
                 }));
 
                 loadProducts();
             } catch (error) {
                 console.error('[area_adm] Erro ao carregar produtos:', error);
-                showNotification('Erro ao carregar produtos.', 'error');
+                showNotification('Erro ao carregar produtos do banco de dados.', 'error');
+
+                // Fallback attempt just in case (e.g. initial setup)
+                try {
+                     const r = await fetch('../../products.json?t=' + new Date().getTime());
+                     if(r.ok) {
+                         const data = await r.json();
+                         products = data.map(product => ({
+                            id: product.id,
+                            nome: product.name,
+                            descricao: product.description,
+                            preco: product.price,
+                            categoria: product.category,
+                            status: product.status,
+                            imagem: product.image,
+                            avaliacao: product.rating,
+                            reviews: product.reviews
+                         }));
+                         loadProducts();
+                         showNotification('Carregado backup local (offline)', 'warning');
+                     }
+                } catch(e) {}
             }
         }
 
@@ -705,7 +700,7 @@
 
             // Load products if products section
             if (sectionName === 'products') {
-                loadProducts();
+                loadProductsFromDB();
             }
         }
 
@@ -719,15 +714,17 @@
                     ? '<span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">✅ Disponível</span>'
                     : '<span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-semibold">❌ Alugado</span>';
 
+                // Safe ID for UUIDs
+                const idString = String(product.id);
+
                 const row = `
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <img src="${product.imagem ? product.imagem : ''}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'">
-                                <img src="${product.imagem ? product.imagem : ''}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'">
                                 <div>
                                     <div class="font-semibold text-gray-800 text-sm">${product.nome}</div>
-                                    <div class="text-xs text-gray-500">Produto ID: ${product.id}</div>
+                                    <div class="text-xs text-gray-500 hidden sm:block" title="${idString}">ID: ...${idString.slice(-4)}</div>
                                 </div>
                             </div>
                         </td>
@@ -776,22 +773,22 @@
         }
 
         // Delete product
-        function deleteProduct(id) {
+        async function deleteProduct(id) {
             if (confirm('Tem certeza que deseja excluir este produto?')) {
-                // Client-side delete
-                products = products.filter(p => String(p.id) !== String(id));
-                // Persist to localStorage
-                localStorage.setItem('local_products', JSON.stringify(products));
+                try {
+                    const { error } = await window.SUPABASE_CLIENT
+                        .from('products')
+                        .delete()
+                        .eq('id', id);
 
-                showNotification('Produto excluído com sucesso!', 'success');
-                loadProducts();
-                // Client-side delete
-                products = products.filter(p => String(p.id) !== String(id));
-                // Persist to localStorage
-                localStorage.setItem('local_products', JSON.stringify(products));
+                    if (error) throw error;
 
-                showNotification('Produto excluído com sucesso!', 'success');
-                loadProducts();
+                    showNotification('Produto excluído com sucesso!', 'success');
+                    loadProductsFromDB();
+                } catch (error) {
+                    console.error('Erro ao excluir:', error);
+                    showNotification('Erro ao excluir produto.', 'error');
+                }
             }
         }
 
@@ -800,8 +797,7 @@
             document.getElementById('productModal').classList.remove('show');
         }
 
-        // Carregar dados do parceiro (LocalStorage)
-        // Carregar dados do parceiro (LocalStorage)
+        // Carregar dados do parceiro (LocalStorage) - Mantido local por enquanto pois não há tabela de parceiros especificada
         function loadPartnerSettings() {
             const savedSettings = localStorage.getItem('partner_settings');
             if (savedSettings) {
@@ -831,50 +827,10 @@
                 document.getElementById('partnerDescription').value = partnerData.descricao;
                 document.getElementById('partnerAddress').value = partnerData.endereco;
             }
-            const savedSettings = localStorage.getItem('partner_settings');
-            if (savedSettings) {
-                const partner = JSON.parse(savedSettings);
-                document.getElementById('partnerName').value = partner.nome || '';
-                document.getElementById('partnerCNPJ').value = partner.cnpj || '';
-                document.getElementById('partnerEmail').value = partner.email || '';
-                document.getElementById('partnerPhone').value = partner.telefone || '';
-                document.getElementById('partnerDescription').value = partner.descricao || '';
-                document.getElementById('partnerAddress').value = partner.endereco || '';
-            } else {
-                // Default info
-                const partnerData = {
-                    nome: 'HelPTech Aluguel de Tecnologia',
-                    cnpj: '12.345.678/0001-90',
-                    email: 'admin@helptech.com',
-                    telefone: '(11) 98765-4321',
-                    descricao: 'Empresa especializada em aluguel de equipamentos tecnológicos de alta qualidade.',
-                    endereco: 'Rua da Tecnologia, 123 - São Paulo, SP'
-                };
-
-                // Pre-fill
-                document.getElementById('partnerName').value = partnerData.nome;
-                document.getElementById('partnerCNPJ').value = partnerData.cnpj;
-                document.getElementById('partnerEmail').value = partnerData.email;
-                document.getElementById('partnerPhone').value = partnerData.telefone;
-                document.getElementById('partnerDescription').value = partnerData.descricao;
-                document.getElementById('partnerAddress').value = partnerData.endereco;
-            }
         }
 
         // Salvar dados do parceiro (LocalStorage)
-        // Salvar dados do parceiro (LocalStorage)
         document.getElementById('saveSettingsBtn').addEventListener('click', function () {
-            const partnerData = {
-                nome: document.getElementById('partnerName').value,
-                cnpj: document.getElementById('partnerCNPJ').value,
-                email: document.getElementById('partnerEmail').value,
-                telefone: document.getElementById('partnerPhone').value,
-                descricao: document.getElementById('partnerDescription').value,
-                endereco: document.getElementById('partnerAddress').value
-            };
-
-            localStorage.setItem('partner_settings', JSON.stringify(partnerData));
-            showNotification('Configurações salvas com sucesso!', 'success');
             const partnerData = {
                 nome: document.getElementById('partnerName').value,
                 cnpj: document.getElementById('partnerCNPJ').value,
@@ -911,14 +867,11 @@
                     imagePreview.innerHTML = `<img src="${e.target.result}" class="image-preview" alt="Preview">`;
                     // Set value to base64 for local storage persistence
                     imageInput.value = e.target.result;
-                    // Set value to base64 for local storage persistence
-                    imageInput.value = e.target.result;
                 };
                 reader.readAsDataURL(file);
             });
 
-            // Carregar produtos
-            // Carregar produtos
+            // Carregar produtos do Supabase
             loadProductsFromDB();
 
             // Carregar dados do parceiro
@@ -926,99 +879,57 @@
         });
 
         // Handle form submission
-        document.getElementById('productForm').addEventListener('submit', function (e) {
+        document.getElementById('productForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const name = document.getElementById('productName').value;
             const category = document.getElementById('productCategory').value;
-            const price = document.getElementById('productPrice').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
             const status = document.getElementById('productStatus').value;
-            const rating = document.getElementById('productRating').value;
+            const rating = parseFloat(document.getElementById('productRating').value);
             const description = document.getElementById('productDescription').value;
             const image = document.getElementById('productImage').value;
 
-            const name = document.getElementById('productName').value;
-            const category = document.getElementById('productCategory').value;
-            const price = document.getElementById('productPrice').value;
-            const status = document.getElementById('productStatus').value;
-            const rating = document.getElementById('productRating').value;
-            const description = document.getElementById('productDescription').value;
-            const image = document.getElementById('productImage').value;
+            // Prepare object for Supabase
+            const productData = {
+                name: name,
+                description: description,
+                price: price,
+                category: category,
+                status: status,
+                image: image,
+                rating: rating,
+                reviews: editingProductId ? undefined : 0, // Only set 0 for new
+                period: 'dia'
+            };
 
-            if (editingProductId) {
-                // Edit
-                const index = products.findIndex(p => String(p.id) === String(editingProductId));
-                if (index !== -1) {
-                    products[index] = {
-                        ...products[index],
-                        nome: name,
-                        categoria: category,
-                        preco: price,
-                        status: status,
-                        avaliacao: rating,
-                        descricao: description,
-                        imagem: image
-                    };
+            try {
+                if (editingProductId) {
+                    // Update
+                    const { error } = await window.SUPABASE_CLIENT
+                        .from('products')
+                        .update(productData)
+                        .eq('id', editingProductId);
+
+                    if (error) throw error;
+                    showNotification('Produto atualizado com sucesso!', 'success');
+                } else {
+                    // Insert
+                    const { error } = await window.SUPABASE_CLIENT
+                        .from('products')
+                        .insert([productData]);
+
+                    if (error) throw error;
+                    showNotification('Produto criado com sucesso!', 'success');
                 }
-            } else {
-                // Add
-                const newId = Date.now(); // Simple ID generation
-                products.push({
-                    id: newId,
-                    nome: name,
-                    categoria: category,
-                    preco: price,
-                    status: status,
-                    avaliacao: rating,
-                    descricao: description,
-                    imagem: image,
-                    reviews: 0
-                });
+
+                closeProductModal();
+                loadProductsFromDB();
+
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                showNotification('Erro ao salvar produto: ' + error.message, 'error');
             }
-
-            // Persist to localStorage
-            localStorage.setItem('local_products', JSON.stringify(products));
-
-            showNotification('Produto salvo com sucesso!', 'success');
-            closeProductModal();
-            loadProducts();
-            if (editingProductId) {
-                // Edit
-                const index = products.findIndex(p => String(p.id) === String(editingProductId));
-                if (index !== -1) {
-                    products[index] = {
-                        ...products[index],
-                        nome: name,
-                        categoria: category,
-                        preco: price,
-                        status: status,
-                        avaliacao: rating,
-                        descricao: description,
-                        imagem: image
-                    };
-                }
-            } else {
-                // Add
-                const newId = Date.now(); // Simple ID generation
-                products.push({
-                    id: newId,
-                    nome: name,
-                    categoria: category,
-                    preco: price,
-                    status: status,
-                    avaliacao: rating,
-                    descricao: description,
-                    imagem: image,
-                    reviews: 0
-                });
-            }
-
-            // Persist to localStorage
-            localStorage.setItem('local_products', JSON.stringify(products));
-
-            showNotification('Produto salvo com sucesso!', 'success');
-            closeProductModal();
-            loadProducts();
         });
 
         // Show notification
@@ -1036,9 +947,10 @@
             }, 3000);
         }
 
-        // Search products
+        // Search products (client-side filter of loaded products)
         document.getElementById('searchProduct').addEventListener('input', function (e) {
             const searchTerm = e.target.value.toLowerCase();
+            // Filter the local 'products' array which was populated from DB
             const filteredProducts = products.filter(p =>
                 p.nome.toLowerCase().includes(searchTerm) ||
                 p.descricao.toLowerCase().includes(searchTerm)
@@ -1060,7 +972,7 @@
                                 <img src="${product.imagem}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover">
                                 <div>
                                     <div class="font-semibold text-gray-800 text-sm">${product.nome}</div>
-                                    <div class="text-xs text-gray-500">Produto ID: ${product.id}</div>
+                                    <div class="text-xs text-gray-500">ID: ...${String(product.id).slice(-4)}</div>
                                 </div>
                             </div>
                         </td>
