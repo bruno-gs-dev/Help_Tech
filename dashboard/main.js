@@ -287,34 +287,55 @@
             });
         }
 
+        // Helper para gerar IDs válidos no DOM a partir de UUIDs/strings
+        function safeId(id) {
+            return String(id).replace(/[^a-zA-Z0-9_-]/g, '_');
+        }
+
         // Carrega produtos do servidor (/api/products), com fallback para /products.json e por fim para staticProducts
         async function loadProducts() {
             try {
-                const res = await fetch('/api/products');
-                if (res.ok) {
-                    const json = await res.json();
-                    // nossa API pode retornar { success, data }
-                    const data = json && json.data ? json.data : json;
-                    products = Array.isArray(data) ? data : (data ? [data] : []);
-                    console.log('[dashboard_logged] loaded products from /api/products', products.length);
+                // Tenta carregar do Supabase Client primeiro (se disponível)
+                if (window.SUPABASE_CLIENT) {
+                    const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*').order('created_at', { ascending: false });
+                    if (!error && data) {
+                        products = data;
+                        console.log('[dashboard_logged] loaded products directly from SUPABASE_CLIENT', products.length);
+                    } else {
+                        throw new Error(error ? error.message : 'No data from Supabase');
+                    }
                 } else {
-                    throw new Error('API status ' + res.status);
+                    throw new Error('Supabase client not available');
                 }
             } catch (e) {
-                console.warn('[dashboard_logged] /api/products failed, trying /products.json', e);
+                console.warn('[dashboard_logged] Supabase client load failed, trying /api/products', e);
                 try {
-                    const r2 = await fetch('/products.json');
-                    if (r2.ok) {
-                        const j2 = await r2.json();
-                        products = j2;
-                        console.log('[dashboard_logged] loaded products from /products.json', products.length);
+                    const res = await fetch('/api/products');
+                    if (res.ok) {
+                        const json = await res.json();
+                        // nossa API pode retornar { success, data }
+                        const data = json && json.data ? json.data : json;
+                        products = Array.isArray(data) ? data : (data ? [data] : []);
+                        console.log('[dashboard_logged] loaded products from /api/products', products.length);
                     } else {
-                        products = staticProducts;
-                        console.log('[dashboard_logged] using staticProducts fallback', products.length);
+                        throw new Error('API status ' + res.status);
                     }
                 } catch (e2) {
-                    products = staticProducts;
-                    console.log('[dashboard_logged] using staticProducts fallback (fetch error)');
+                    console.warn('[dashboard_logged] /api/products failed, trying /products.json', e2);
+                    try {
+                        const r3 = await fetch('/products.json');
+                        if (r3.ok) {
+                            const j3 = await r3.json();
+                            products = j3;
+                            console.log('[dashboard_logged] loaded products from /products.json', products.length);
+                        } else {
+                            products = staticProducts;
+                            console.log('[dashboard_logged] using staticProducts fallback', products.length);
+                        }
+                    } catch (e3) {
+                        products = staticProducts;
+                        console.log('[dashboard_logged] using staticProducts fallback (fetch error)');
+                    }
                 }
             }
 
@@ -328,7 +349,7 @@
                 products.forEach(product => {
                     if (product.status === 'available') {
                         updateProductPrice(product.id);
-                        const minusBtn = document.querySelector(`[onclick="changeQuantity(${product.id}, -1)"]`);
+                        const minusBtn = document.querySelector(`[onclick="changeQuantity('${product.id}', -1)"]`);
                         if (minusBtn) minusBtn.disabled = true;
                     }
                 });
@@ -375,6 +396,7 @@
                     : 'bg-red-100/10 text-red-500 border-red-200/20';
                 const badgeText = product.status === 'available' ? '✅ Disponível' : '❌ Indisponível';
                 const buttonDisabled = product.status === 'rented' ? 'disabled' : '';
+                const idSafe = safeId(product.id);
 
                 const productCard = `
                     <div class="product-card bg-white rounded-2xl p-6 transition-all duration-300 cursor-pointer border border-gray-100 relative overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:border-transparent">
@@ -395,7 +417,7 @@
                         </div>
                         <p class="text-sm text-gray-600 mb-4 leading-6">${product.description}</p>
                         <div class="mb-4">
-                            <select id="period-${product.id}" onchange="updateProductPrice(${product.id})" 
+                            <select id="period-${idSafe}" onchange="updateProductPrice('${product.id}')"
                                     class="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm bg-white transition-colors duration-200 focus:outline-none focus:border-primary focus:shadow-sm focus:shadow-primary/10">
                                 <option value="1">1 dia</option>
                                 <option value="3">3 dias</option>
@@ -406,20 +428,20 @@
                         <div class="mb-4">
                             <label class="text-sm font-medium text-gray-600 block mb-2">Quantidade:</label>
                             <div class="flex items-center gap-3">
-                                <button type="button" onclick="changeQuantity(${product.id}, -1)" 
+                                <button type="button" onclick="changeQuantity('${product.id}', -1)"
                                         class="w-8 h-8 border border-gray-300 bg-white rounded-lg cursor-pointer flex items-center justify-center font-semibold text-gray-600 transition-all duration-200 hover:border-primary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed" 
                                         ${product.status === 'rented' ? 'disabled' : ''}>-</button>
-                                <span class="min-w-8 text-center font-semibold text-gray-800" id="qty-${product.id}">1</span>
-                                <button type="button" onclick="changeQuantity(${product.id}, 1)" 
+                                <span class="min-w-8 text-center font-semibold text-gray-800" id="qty-${idSafe}">1</span>
+                                <button type="button" onclick="changeQuantity('${product.id}', 1)"
                                         class="w-8 h-8 border border-gray-300 bg-white rounded-lg cursor-pointer flex items-center justify-center font-semibold text-gray-600 transition-all duration-200 hover:border-primary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed" 
                                         ${product.status === 'rented' ? 'disabled' : ''}>+</button>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center mb-4 px-3 py-3 bg-gray-50 rounded-lg text-sm" id="total-${product.id}">
+                        <div class="flex justify-between items-center mb-4 px-3 py-3 bg-gray-50 rounded-lg text-sm" id="total-${idSafe}">
                             <span class="font-medium text-gray-600">Total:</span>
                             <span class="total-amount font-bold text-primary text-base">R$ ${product.price},00</span>
                         </div>
-                        <button onclick="addToCart(${product.id})" 
+                        <button onclick="addToCart('${product.id}')"
                                 class="${product.status === 'rented' ? 'bg-gray-400 cursor-not-allowed' : 'btn-gradient-primary hover:-translate-y-0.5 hover:shadow-lg'} w-full px-3 py-3.5 text-white border-none rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 uppercase tracking-wide" 
                                 ${buttonDisabled}>
                             ${product.status === 'rented' ? '❌ Indisponível' : '🛒 Adicionar ao carrinho'}
