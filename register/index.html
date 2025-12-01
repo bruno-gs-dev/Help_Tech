@@ -701,8 +701,10 @@
 
                     // Include some user metadata if available
                     const userMetadata = {
+                        username: formDataObj.email ? formDataObj.email.split('@')[0] : '', // Default username
                         first_name: formDataObj.first_name || '',
                         last_name: formDataObj.last_name || '',
+                        full_name: ((formDataObj.first_name || '') + ' ' + (formDataObj.last_name || '')).trim(), // Add full_name
                         phone: formDataObj.phone || '',
                         birthday: formDataObj.birthday || '',
                     };
