@@ -12,6 +12,22 @@ let currentCategory = 'all';
 let productQuantities = {};
 let productPeriods = {};
 
+// Normalize product records coming from different sources (Supabase, local JSON, legacy keys)
+function normalizeProducts(list) {
+    return (list || []).map(p => ({
+        id: p.id,
+        name: p.name || p.nome || p.title || '',
+        description: p.description || p.descricao || p.summary || '',
+        price: Number(p.price || p.preco || p.cost || 0),
+        category: p.category || p.categoria || p.category || 'other',
+        status: p.status || (p.published ? 'available' : 'rented') || 'available',
+        image: p.image || p.imagem || p.image_url || '',
+        rating: Number(p.rating || p.avaliacao || 0),
+        reviews: Number(p.reviews || p.reviews_count || 0),
+        period: p.period || 'dia'
+    }));
+}
+
 // Mapeamento de nomes de categorias
 const categoryNames = {
     'all': 'Todos os Departamentos',
@@ -32,16 +48,16 @@ async function loadProducts() {
             ? 'http://localhost:3000/api'
             : '/api';
 
-        // Preferência: forçar a home a usar a mesma fonte que o painel de administração (API/Supabase)
-        // Se você quiser usar o cliente Supabase direto no cliente, defina window.FORCE_API_FOR_HOME = false
-        const FORCE_API_FOR_HOME = (window.FORCE_API_FOR_HOME === undefined) ? true : Boolean(window.FORCE_API_FOR_HOME);
+        // Preferência: por padrão prioriza o cliente Supabase no cliente quando disponível
+        // Se quiser forçar o uso do endpoint serverless/API, defina window.FORCE_API_FOR_HOME = true
+        const FORCE_API_FOR_HOME = (window.FORCE_API_FOR_HOME === undefined) ? false : Boolean(window.FORCE_API_FOR_HOME);
 
         // Primeiro tenta carregar diretamente do Supabase client (client-side) se estiver configurado
         if (!FORCE_API_FOR_HOME && window.SUPABASE_CLIENT) {
             try {
                 const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
-                products = Array.isArray(data) ? data : [];
+                products = normalizeProducts(Array.isArray(data) ? data : []);
                     console.log('[main] loaded products directly from SUPABASE_CLIENT, count:', products.length);
             } catch (e) {
                 console.warn('[main] erro ao buscar direto no Supabase client, tentando /api/products fallback:', e.message || e);
@@ -57,11 +73,11 @@ async function loadProducts() {
                     // fallback para arquivo estático
                     const fallback = await fetch('products.json?t=' + new Date().getTime());
                     if (!fallback.ok) throw new Error('Não foi possível carregar os produtos do servidor nem do arquivo local');
-                    products = await fallback.json();
+                    products = normalizeProducts(await fallback.json());
                         console.log('[main] loaded products from products.json, count:', Array.isArray(products) ? products.length : 0);
                 } else {
                     const body = await response.json();
-                    products = body && body.data ? body.data : [];
+                    products = normalizeProducts(body && body.data ? body.data : []);
                     console.log('[main] loaded products from ' + API_BASE_URL + '/products, count:', Array.isArray(products) ? products.length : 0, ' body:', body);
                 }
             }
@@ -74,14 +90,14 @@ async function loadProducts() {
                 response = null;
             }
 
-            if (!response || !response.ok) {
+                if (!response || !response.ok) {
                 const fallback = await fetch('products.json?t=' + new Date().getTime());
                 if (!fallback.ok) throw new Error('Não foi possível carregar os produtos do servidor nem do arquivo local');
-                products = await fallback.json();
+                products = normalizeProducts(await fallback.json());
                     console.log('[main] loaded products from products.json, count:', Array.isArray(products) ? products.length : 0);
             } else {
                 const body = await response.json();
-                    products = body && body.data ? body.data : [];
+                    products = normalizeProducts(body && body.data ? body.data : []);
                     console.log('[main] loaded products from ' + API_BASE_URL + '/products, count:', Array.isArray(products) ? products.length : 0, ' body:', body);
             }
         }

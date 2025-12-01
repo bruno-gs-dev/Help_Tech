@@ -101,10 +101,31 @@
         // Runtime product list (populated from API or fallback)
         let products = [];
 
+        // Normalize product records coming from different sources (Supabase, local JSON, legacy keys)
+        function normalizeProducts(list) {
+            return (list || []).map(p => ({
+                id: p.id,
+                name: p.name || p.nome || p.title || '',
+                description: p.description || p.descricao || p.summary || '',
+                price: Number(p.price || p.preco || p.cost || 0),
+                category: p.category || p.categoria || p.category || 'other',
+                status: p.status || (p.published ? 'available' : 'rented') || 'available',
+                image: p.image || p.imagem || p.image_url || '',
+                rating: Number(p.rating || p.avaliacao || 0),
+                reviews: Number(p.reviews || p.reviews_count || 0),
+                period: p.period || 'dia'
+            }));
+        }
+
+        // Helper para gerar IDs válidos no DOM a partir de UUIDs/strings
+        function safeId(id) {
+            return String(id).replace(/[^a-zA-Z0-9_-]/g, '_');
+        }
+
     // Fallback image (inline SVG) para quando não houver imagem
     const IMAGE_FALLBACK = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+';
 
-        let cart = [];
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
         // filteredProducts will contain the products currently shown (depends on login state)
         let filteredProducts = [];
         let currentSort = 'relevance';
@@ -120,14 +141,15 @@
             
             productQuantities[productId] = newQty;
             
-            const qtyDisplay = document.getElementById(`qty-${productId}`);
+            const idSafe = safeId(productId);
+            const qtyDisplay = document.getElementById(`qty-${idSafe}`);
             if (qtyDisplay) 
             {
                 qtyDisplay.textContent = newQty;
             }
             
-            const minusBtn = document.querySelector(`[onclick="changeQuantity(${productId}, -1)"]`);
-            const plusBtn = document.querySelector(`[onclick="changeQuantity(${productId}, 1)"]`);
+            const minusBtn = document.querySelector(`[onclick="changeQuantity('${productId}', -1)"]`);
+            const plusBtn = document.querySelector(`[onclick="changeQuantity('${productId}', 1)"]`);
             
             if (minusBtn) minusBtn.disabled = newQty <= 1;
             if (plusBtn) plusBtn.disabled = newQty >= 10;
@@ -138,11 +160,12 @@
         // Função para atualizar preço do produto baseado na quantidade e período
         function updateProductPrice(productId) 
         {
-            const product = products.find(p => p.id === productId);
+            const product = products.find(p => String(p.id) === String(productId));
             if (!product) return;
             
             const quantity = productQuantities[productId] || 1;
-            const periodSelect = document.getElementById(`period-${productId}`);
+            const idSafe = safeId(productId);
+            const periodSelect = document.getElementById(`period-${idSafe}`);
             const period = periodSelect ? parseInt(periodSelect.value) : 1;
             
             productPeriods[productId] = period;
@@ -159,7 +182,7 @@
             
             const totalPrice = product.price * quantity * periodMultiplier;
             
-            const totalDisplay = document.getElementById(`total-${productId}`);
+            const totalDisplay = document.getElementById(`total-${idSafe}`);
             if (totalDisplay) 
             {
                 const totalAmount = totalDisplay.querySelector('.total-amount');
@@ -290,31 +313,49 @@
         // Carrega produtos do servidor (/api/products), com fallback para /products.json e por fim para staticProducts
         async function loadProducts() {
             try {
-                const res = await fetch('/api/products');
-                if (res.ok) {
-                    const json = await res.json();
-                    // nossa API pode retornar { success, data }
-                    const data = json && json.data ? json.data : json;
-                    products = Array.isArray(data) ? data : (data ? [data] : []);
-                    console.log('[dashboard_logged] loaded products from /api/products', products.length);
-                } else {
-                    throw new Error('API status ' + res.status);
-                }
-            } catch (e) {
-                console.warn('[dashboard_logged] /api/products failed, trying /products.json', e);
-                try {
-                    const r2 = await fetch('/products.json');
-                    if (r2.ok) {
-                        const j2 = await r2.json();
-                        products = j2;
-                        console.log('[dashboard_logged] loaded products from /products.json', products.length);
-                    } else {
-                        products = staticProducts;
-                        console.log('[dashboard_logged] using staticProducts fallback', products.length);
+                // 1. Try Supabase Client directly if available
+                if (window.SUPABASE_CLIENT) {
+                    try {
+                        const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*').order('created_at', { ascending: false });
+                        if (error) throw error;
+                        products = normalizeProducts(Array.isArray(data) ? data : []);
+                        console.log('[dashboard_logged] loaded products directly from SUPABASE_CLIENT', products.length);
+                    } catch (e) {
+                        console.warn('[dashboard_logged] Supabase client fetch failed, trying API...', e);
+                        throw e; // Throw to trigger fallback to API
                     }
-                } catch (e2) {
-                    products = staticProducts;
-                    console.log('[dashboard_logged] using staticProducts fallback (fetch error)');
+                } else {
+                    throw new Error('No Supabase client');
+                }
+            } catch (errSupabase) {
+                // 2. Fallback to API
+                try {
+                    const res = await fetch('/api/products');
+                    if (res.ok) {
+                        const json = await res.json();
+                        // nossa API pode retornar { success, data }
+                        const data = json && json.data ? json.data : json;
+                        products = normalizeProducts(Array.isArray(data) ? data : (data ? [data] : []));
+                        console.log('[dashboard_logged] loaded products from /api/products', products.length);
+                    } else {
+                        throw new Error('API status ' + res.status);
+                    }
+                } catch (e) {
+                    console.warn('[dashboard_logged] /api/products failed, trying /products.json', e);
+                    try {
+                        const r2 = await fetch('/products.json');
+                        if (r2.ok) {
+                            const j2 = await r2.json();
+                            products = normalizeProducts(j2);
+                            console.log('[dashboard_logged] loaded products from /products.json', products.length);
+                        } else {
+                            products = normalizeProducts(staticProducts);
+                            console.log('[dashboard_logged] using staticProducts fallback', products.length);
+                        }
+                    } catch (e2) {
+                        products = normalizeProducts(staticProducts);
+                        console.log('[dashboard_logged] using staticProducts fallback (fetch error)');
+                    }
                 }
             }
 
@@ -328,7 +369,7 @@
                 products.forEach(product => {
                     if (product.status === 'available') {
                         updateProductPrice(product.id);
-                        const minusBtn = document.querySelector(`[onclick="changeQuantity(${product.id}, -1)"]`);
+                        const minusBtn = document.querySelector(`[onclick="changeQuantity('${product.id}', -1)"]`);
                         if (minusBtn) minusBtn.disabled = true;
                     }
                 });
@@ -375,6 +416,7 @@
                     : 'bg-red-100/10 text-red-500 border-red-200/20';
                 const badgeText = product.status === 'available' ? '✅ Disponível' : '❌ Indisponível';
                 const buttonDisabled = product.status === 'rented' ? 'disabled' : '';
+                const idSafe = safeId(product.id);
 
                 const productCard = `
                     <div class="product-card bg-white rounded-2xl p-6 transition-all duration-300 cursor-pointer border border-gray-100 relative overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:border-transparent">
@@ -395,7 +437,7 @@
                         </div>
                         <p class="text-sm text-gray-600 mb-4 leading-6">${product.description}</p>
                         <div class="mb-4">
-                            <select id="period-${product.id}" onchange="updateProductPrice(${product.id})" 
+                            <select id="period-${idSafe}" onchange="updateProductPrice('${product.id}')" 
                                     class="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm bg-white transition-colors duration-200 focus:outline-none focus:border-primary focus:shadow-sm focus:shadow-primary/10">
                                 <option value="1">1 dia</option>
                                 <option value="3">3 dias</option>
@@ -406,20 +448,20 @@
                         <div class="mb-4">
                             <label class="text-sm font-medium text-gray-600 block mb-2">Quantidade:</label>
                             <div class="flex items-center gap-3">
-                                <button type="button" onclick="changeQuantity(${product.id}, -1)" 
+                                <button type="button" onclick="changeQuantity('${product.id}', -1)" 
                                         class="w-8 h-8 border border-gray-300 bg-white rounded-lg cursor-pointer flex items-center justify-center font-semibold text-gray-600 transition-all duration-200 hover:border-primary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed" 
                                         ${product.status === 'rented' ? 'disabled' : ''}>-</button>
-                                <span class="min-w-8 text-center font-semibold text-gray-800" id="qty-${product.id}">1</span>
-                                <button type="button" onclick="changeQuantity(${product.id}, 1)" 
+                                <span class="min-w-8 text-center font-semibold text-gray-800" id="qty-${idSafe}">1</span>
+                                <button type="button" onclick="changeQuantity('${product.id}', 1)" 
                                         class="w-8 h-8 border border-gray-300 bg-white rounded-lg cursor-pointer flex items-center justify-center font-semibold text-gray-600 transition-all duration-200 hover:border-primary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed" 
                                         ${product.status === 'rented' ? 'disabled' : ''}>+</button>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center mb-4 px-3 py-3 bg-gray-50 rounded-lg text-sm" id="total-${product.id}">
+                        <div class="flex justify-between items-center mb-4 px-3 py-3 bg-gray-50 rounded-lg text-sm" id="total-${idSafe}">
                             <span class="font-medium text-gray-600">Total:</span>
                             <span class="total-amount font-bold text-primary text-base">R$ ${product.price},00</span>
                         </div>
-                        <button onclick="addToCart(${product.id})" 
+                        <button onclick="addToCart('${product.id}')" 
                                 class="${product.status === 'rented' ? 'bg-gray-400 cursor-not-allowed' : 'btn-gradient-primary hover:-translate-y-0.5 hover:shadow-lg'} w-full px-3 py-3.5 text-white border-none rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 uppercase tracking-wide" 
                                 ${buttonDisabled}>
                             ${product.status === 'rented' ? '❌ Indisponível' : '🛒 Adicionar ao carrinho'}
@@ -431,6 +473,11 @@
         }
 
         // Funções para manipulação do carrinho
+        function saveCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+        }
+
         function addToCart(productId) 
         {
             const product = products.find(p => String(p.id) === String(productId));
@@ -453,7 +500,7 @@
                 const unitPrice = product.price * periodMultiplier;
                 
                 const existingItemIndex = cart.findIndex(item => 
-                    item.id === productId && 
+                    String(item.id) === String(productId) && 
                     item.selectedPeriod === period
                 );
                 
@@ -475,7 +522,7 @@
                     });
                 }
                 
-                updateCartCount();
+                saveCart();
                 openCart();
             }
         }
@@ -565,7 +612,7 @@
             {
                 const newQuantity = Math.max(1, cart[itemIndex].quantity + change);
                 cart[itemIndex].quantity = newQuantity;
-                updateCartCount();
+                saveCart();
                 openCart();
             }
         }
@@ -581,7 +628,7 @@
             if (itemIndex >= 0 && itemIndex < cart.length) 
             {
                 cart.splice(itemIndex, 1);
-                updateCartCount();
+                saveCart();
                 openCart();
             }
         }
@@ -681,7 +728,7 @@
         {
             // Load products from API (with fallbacks) and render
             loadProducts();
-            
+            updateCartCount();
             
             
             const searchInput = document.getElementById('searchInput');

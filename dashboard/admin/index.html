@@ -164,27 +164,27 @@
         <!-- Sidebar -->
         <aside class="w-64 bg-white border-r border-gray-200 p-6">
             <nav class="space-y-2">
-                <a href="#" onclick="showSection('dashboard')"
+                <a href="#" onclick="showSection('dashboard', event)"
                     class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
                     <span class="text-xl">📊</span>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" onclick="showSection('products')"
+                <a href="#" onclick="showSection('products', event)"
                     class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
                     <span class="text-xl">📦</span>
                     <span>Produtos</span>
                 </a>
-                <a href="#" onclick="showSection('orders')"
+                <a href="#" onclick="showSection('orders', event)"
                     class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
                     <span class="text-xl">🛒</span>
                     <span>Pedidos</span>
                 </a>
-                <a href="#" onclick="showSection('analytics')"
+                <a href="#" onclick="showSection('analytics', event)"
                     class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
                     <span class="text-xl">📈</span>
                     <span>Análises</span>
                 </a>
-                <a href="#" onclick="showSection('settings')"
+                <a href="#" onclick="showSection('settings', event)"
                     class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all">
                     <span class="text-xl">⚙️</span>
                     <span>Configurações</span>
@@ -634,29 +634,33 @@
             try {
                 let list = [];
 
-                // 1. Try LocalStorage "database" first (simulating backend)
-                const storedProducts = localStorage.getItem('local_products');
-                if (storedProducts) {
-                    list = JSON.parse(storedProducts);
-                    console.log('Loaded products from localStorage');
-                } else {
-                    // 2. Fallback to products.json
-                     try {
-                        const r = await fetch('../../products.json?t=' + new Date().getTime());
-                        const data = await r.json();
-                        list = data;
-                        console.log('Loaded products from products.json');
-                    } catch (e) {
-                        console.warn('Failed to load products.json', e);
+                // 1) Try Supabase when available
+                try {
+                    if (window.SUPABASE_CLIENT && typeof window.SUPABASE_CLIENT.from === 'function') {
+                        const { data, error } = await window.SUPABASE_CLIENT.from('products').select('*');
+                        if (!error && Array.isArray(data) && data.length > 0) {
+                            list = data;
+                            console.log('Loaded products from Supabase');
+                        } else if (error) {
+                            console.warn('Supabase error while fetching products:', error);
+                        }
                     }
-                // 1. Try LocalStorage "database" first (simulating backend)
-                const storedProducts = localStorage.getItem('local_products');
-                if (storedProducts) {
-                    list = JSON.parse(storedProducts);
-                    console.log('Loaded products from localStorage');
-                } else {
-                    // 2. Fallback to products.json
-                     try {
+                } catch (supErr) {
+                    console.warn('Supabase lookup failed:', supErr);
+                }
+
+                // 2) Fallback to LocalStorage
+                if (!list || list.length === 0) {
+                    const storedProducts = localStorage.getItem('local_products');
+                    if (storedProducts) {
+                        list = JSON.parse(storedProducts);
+                        console.log('Loaded products from localStorage');
+                    }
+                }
+
+                // 3) Fallback to products.json file
+                if (!list || list.length === 0) {
+                    try {
                         const r = await fetch('../../products.json?t=' + new Date().getTime());
                         const data = await r.json();
                         list = data;
@@ -666,12 +670,11 @@
                     }
                 }
 
-                // Mapeia os campos
-                // Mapeia os campos
+                // Mapeia os campos para o formato usado pelo admin
                 products = (list || []).map(product => ({
                     id: product.id,
                     nome: product.name || product.nome,
-                    descricao: product.description || product.descricao || '',
+                    descricao: product.description || product.descricao || product.descricao || '',
                     preco: Number(product.price || product.preco || 0),
                     categoria: product.category || product.categoria,
                     status: product.status || 'available',
@@ -688,7 +691,7 @@
         }
 
         // Show section
-        function showSection(sectionName) {
+        function showSection(sectionName, ev) {
             // Hide all sections
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.add('hidden');
@@ -701,7 +704,12 @@
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 link.classList.remove('active');
             });
-            event.target.closest('.sidebar-link').classList.add('active');
+            try {
+                const clicked = ev && ev.target ? ev.target.closest('.sidebar-link') : null;
+                if (clicked) clicked.classList.add('active');
+            } catch (e) {
+                // ignore if something unexpected happens
+            }
 
             // Load products if products section
             if (sectionName === 'products') {
@@ -723,7 +731,6 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <img src="${product.imagem ? product.imagem : ''}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'">
                                 <img src="${product.imagem ? product.imagem : ''}" alt="${product.nome}" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik04NyA4N2gyNnYyNkg4N1Y4N3oiIGZpbGw9IiNkMWQ1ZGIiLz4KPHA+'">
                                 <div>
                                     <div class="font-semibold text-gray-800 text-sm">${product.nome}</div>
@@ -776,22 +783,33 @@
         }
 
         // Delete product
-        function deleteProduct(id) {
+        async function deleteProduct(id) {
             if (confirm('Tem certeza que deseja excluir este produto?')) {
-                // Client-side delete
-                products = products.filter(p => String(p.id) !== String(id));
-                // Persist to localStorage
-                localStorage.setItem('local_products', JSON.stringify(products));
+                try {
+                    // 1. Try Supabase delete
+                    if (window.SUPABASE_CLIENT) {
+                        const { error } = await window.SUPABASE_CLIENT
+                            .from('products')
+                            .delete()
+                            .eq('id', id);
+                        
+                        if (error) {
+                            console.error('Supabase delete error:', error);
+                            throw error;
+                        }
+                        console.log('Deleted from Supabase');
+                    }
 
-                showNotification('Produto excluído com sucesso!', 'success');
-                loadProducts();
-                // Client-side delete
-                products = products.filter(p => String(p.id) !== String(id));
-                // Persist to localStorage
-                localStorage.setItem('local_products', JSON.stringify(products));
+                    // 2. Update local state (fallback/UI update)
+                    products = products.filter(p => String(p.id) !== String(id));
+                    localStorage.setItem('local_products', JSON.stringify(products));
 
-                showNotification('Produto excluído com sucesso!', 'success');
-                loadProducts();
+                    showNotification('Produto excluído com sucesso!', 'success');
+                    loadProductsFromDB(); // Reload to be sure
+                } catch (err) {
+                    console.error('Error deleting product:', err);
+                    showNotification('Erro ao excluir produto: ' + err.message, 'error');
+                }
             }
         }
 
@@ -800,7 +818,6 @@
             document.getElementById('productModal').classList.remove('show');
         }
 
-        // Carregar dados do parceiro (LocalStorage)
         // Carregar dados do parceiro (LocalStorage)
         function loadPartnerSettings() {
             const savedSettings = localStorage.getItem('partner_settings');
@@ -831,50 +848,10 @@
                 document.getElementById('partnerDescription').value = partnerData.descricao;
                 document.getElementById('partnerAddress').value = partnerData.endereco;
             }
-            const savedSettings = localStorage.getItem('partner_settings');
-            if (savedSettings) {
-                const partner = JSON.parse(savedSettings);
-                document.getElementById('partnerName').value = partner.nome || '';
-                document.getElementById('partnerCNPJ').value = partner.cnpj || '';
-                document.getElementById('partnerEmail').value = partner.email || '';
-                document.getElementById('partnerPhone').value = partner.telefone || '';
-                document.getElementById('partnerDescription').value = partner.descricao || '';
-                document.getElementById('partnerAddress').value = partner.endereco || '';
-            } else {
-                // Default info
-                const partnerData = {
-                    nome: 'HelPTech Aluguel de Tecnologia',
-                    cnpj: '12.345.678/0001-90',
-                    email: 'admin@helptech.com',
-                    telefone: '(11) 98765-4321',
-                    descricao: 'Empresa especializada em aluguel de equipamentos tecnológicos de alta qualidade.',
-                    endereco: 'Rua da Tecnologia, 123 - São Paulo, SP'
-                };
-
-                // Pre-fill
-                document.getElementById('partnerName').value = partnerData.nome;
-                document.getElementById('partnerCNPJ').value = partnerData.cnpj;
-                document.getElementById('partnerEmail').value = partnerData.email;
-                document.getElementById('partnerPhone').value = partnerData.telefone;
-                document.getElementById('partnerDescription').value = partnerData.descricao;
-                document.getElementById('partnerAddress').value = partnerData.endereco;
-            }
         }
 
         // Salvar dados do parceiro (LocalStorage)
-        // Salvar dados do parceiro (LocalStorage)
         document.getElementById('saveSettingsBtn').addEventListener('click', function () {
-            const partnerData = {
-                nome: document.getElementById('partnerName').value,
-                cnpj: document.getElementById('partnerCNPJ').value,
-                email: document.getElementById('partnerEmail').value,
-                telefone: document.getElementById('partnerPhone').value,
-                descricao: document.getElementById('partnerDescription').value,
-                endereco: document.getElementById('partnerAddress').value
-            };
-
-            localStorage.setItem('partner_settings', JSON.stringify(partnerData));
-            showNotification('Configurações salvas com sucesso!', 'success');
             const partnerData = {
                 nome: document.getElementById('partnerName').value,
                 cnpj: document.getElementById('partnerCNPJ').value,
@@ -926,7 +903,7 @@
         });
 
         // Handle form submission
-        document.getElementById('productForm').addEventListener('submit', function (e) {
+        document.getElementById('productForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const name = document.getElementById('productName').value;
@@ -937,88 +914,85 @@
             const description = document.getElementById('productDescription').value;
             const image = document.getElementById('productImage').value;
 
-            const name = document.getElementById('productName').value;
-            const category = document.getElementById('productCategory').value;
-            const price = document.getElementById('productPrice').value;
-            const status = document.getElementById('productStatus').value;
-            const rating = document.getElementById('productRating').value;
-            const description = document.getElementById('productDescription').value;
-            const image = document.getElementById('productImage').value;
+            const productData = {
+                name: name,
+                category: category,
+                price: Number(price),
+                status: status,
+                rating: Number(rating),
+                description: description,
+                image: image,
+                reviews: 0 // Default for new, or keep existing?
+            };
 
-            if (editingProductId) {
-                // Edit
-                const index = products.findIndex(p => String(p.id) === String(editingProductId));
-                if (index !== -1) {
-                    products[index] = {
-                        ...products[index],
+            try {
+                if (editingProductId) {
+                    // --- UPDATE ---
+                    if (window.SUPABASE_CLIENT) {
+                        const { error } = await window.SUPABASE_CLIENT
+                            .from('products')
+                            .update(productData)
+                            .eq('id', editingProductId);
+
+                        if (error) throw error;
+                        console.log('Updated in Supabase');
+                    }
+
+                    // Update local state (fallback)
+                    const index = products.findIndex(p => String(p.id) === String(editingProductId));
+                    if (index !== -1) {
+                        products[index] = {
+                            ...products[index],
+                            nome: name,
+                            categoria: category,
+                            preco: Number(price),
+                            status: status,
+                            avaliacao: Number(rating),
+                            descricao: description,
+                            imagem: image
+                        };
+                    }
+
+                } else {
+                    // --- CREATE ---
+                    if (window.SUPABASE_CLIENT) {
+                        // Remove ID to let Supabase generate it (if auto-increment) or generate one if needed
+                        // Usually Supabase handles ID generation.
+                        const { data, error } = await window.SUPABASE_CLIENT
+                            .from('products')
+                            .insert([productData])
+                            .select();
+
+                        if (error) throw error;
+                        console.log('Created in Supabase', data);
+                    }
+
+                    // Update local state (fallback)
+                    const newId = Date.now();
+                    products.push({
+                        id: newId,
                         nome: name,
                         categoria: category,
-                        preco: price,
+                        preco: Number(price),
                         status: status,
-                        avaliacao: rating,
+                        avaliacao: Number(rating),
                         descricao: description,
-                        imagem: image
-                    };
+                        imagem: image,
+                        reviews: 0
+                    });
                 }
-            } else {
-                // Add
-                const newId = Date.now(); // Simple ID generation
-                products.push({
-                    id: newId,
-                    nome: name,
-                    categoria: category,
-                    preco: price,
-                    status: status,
-                    avaliacao: rating,
-                    descricao: description,
-                    imagem: image,
-                    reviews: 0
-                });
+
+                // Persist to localStorage
+                localStorage.setItem('local_products', JSON.stringify(products));
+                
+                showNotification('Produto salvo com sucesso!', 'success');
+                closeProductModal();
+                loadProductsFromDB(); // Reload from source to get fresh IDs/Data
+
+            } catch (err) {
+                console.error('Error saving product:', err);
+                showNotification('Erro ao salvar produto: ' + err.message, 'error');
             }
-
-            // Persist to localStorage
-            localStorage.setItem('local_products', JSON.stringify(products));
-
-            showNotification('Produto salvo com sucesso!', 'success');
-            closeProductModal();
-            loadProducts();
-            if (editingProductId) {
-                // Edit
-                const index = products.findIndex(p => String(p.id) === String(editingProductId));
-                if (index !== -1) {
-                    products[index] = {
-                        ...products[index],
-                        nome: name,
-                        categoria: category,
-                        preco: price,
-                        status: status,
-                        avaliacao: rating,
-                        descricao: description,
-                        imagem: image
-                    };
-                }
-            } else {
-                // Add
-                const newId = Date.now(); // Simple ID generation
-                products.push({
-                    id: newId,
-                    nome: name,
-                    categoria: category,
-                    preco: price,
-                    status: status,
-                    avaliacao: rating,
-                    descricao: description,
-                    imagem: image,
-                    reviews: 0
-                });
-            }
-
-            // Persist to localStorage
-            localStorage.setItem('local_products', JSON.stringify(products));
-
-            showNotification('Produto salvo com sucesso!', 'success');
-            closeProductModal();
-            loadProducts();
         });
 
         // Show notification

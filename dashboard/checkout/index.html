@@ -317,21 +317,14 @@
                             <span>📋</span> Resumo do Pedido
                         </h2>
                         
-                        <div class="space-y-4 mb-6">
-                            <div class="flex gap-3 pb-4 border-b border-gray-100">
-                                <img src="../../assets/img/macbook.jpg" alt="Produto" class="w-16 h-16 rounded-lg object-cover">
-                                <div class="flex-1">
-                                    <div class="font-semibold text-sm text-gray-800 mb-1">MacBook Pro 16"</div>
-                                    <div class="text-xs text-gray-500">1x • 7 dias</div>
-                                    <div class="text-sm font-bold text-primary mt-1">R$ 623,00</div>
-                                </div>
-                            </div>
+                        <div id="order-summary-items" class="space-y-4 mb-6">
+                            <!-- Items will be injected here -->
                         </div>
 
                         <div class="space-y-3 mb-6 pb-6 border-b border-gray-200">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Subtotal</span>
-                                <span class="font-semibold text-gray-800">R$ 623,00</span>
+                                <span id="summary-subtotal" class="font-semibold text-gray-800">R$ 0,00</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Entrega</span>
@@ -345,7 +338,7 @@
 
                         <div class="flex justify-between items-center mb-6">
                             <span class="text-lg font-bold text-gray-800">Total</span>
-                            <span class="text-2xl font-bold text-primary">R$ 623,00</span>
+                            <span id="summary-total" class="text-2xl font-bold text-primary">R$ 0,00</span>
                         </div>
 
                         <button onclick="finishCheckout()" class="w-full bg-gradient-to-r from-secondary to-green-600 text-white py-4 rounded-xl font-bold text-base hover:shadow-lg transition-all duration-200 mb-4">
@@ -395,6 +388,66 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCartSummary();
+        });
+
+        function loadCartSummary() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const container = document.getElementById('order-summary-items');
+            const subtotalEl = document.getElementById('summary-subtotal');
+            const totalEl = document.getElementById('summary-total');
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-4">Seu carrinho está vazio</div>';
+                subtotalEl.textContent = 'R$ 0,00';
+                totalEl.textContent = 'R$ 0,00';
+                // Opcional: Redirecionar se estiver vazio
+                // window.location.href = '../index.html';
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = '';
+
+            cart.forEach(item => {
+                // Use unitPrice (calculated with period multiplier) if available, otherwise fallback to price * period logic or just price
+                // In dashboard/main.js, unitPrice is the price for the selected period per unit.
+                const pricePerUnit = item.unitPrice || item.price; 
+                const itemTotal = pricePerUnit * item.quantity;
+                total += itemTotal;
+
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex gap-3 pb-4 border-b border-gray-100 last:border-0';
+                
+                // Tratar imagem (se for URL relativa ou absoluta)
+                let imgSrc = item.image;
+                if (!imgSrc.startsWith('http') && !imgSrc.startsWith('data:')) {
+                    // Ajustar caminho relativo se necessário, assumindo que no dashboard a imagem funcionava
+                    // Se a imagem vier como 'assets/img/...', precisamos subir dois níveis
+                    if (imgSrc.startsWith('assets/')) {
+                        imgSrc = '../../' + imgSrc;
+                    }
+                }
+
+                const periodDisplay = item.selectedPeriodName || (item.period ? item.period + ' dias' : '7 dias');
+
+                itemEl.innerHTML = `
+                    <img src="${imgSrc}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover" onerror="this.src='../../assets/img/placeholder.jpg'">
+                    <div class="flex-1">
+                        <div class="font-semibold text-sm text-gray-800 mb-1 line-clamp-2">${item.name}</div>
+                        <div class="text-xs text-gray-500">${item.quantity}x • ${periodDisplay}</div>
+                        <div class="text-sm font-bold text-primary mt-1">R$ ${itemTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                    </div>
+                `;
+                container.appendChild(itemEl);
+            });
+
+            const formattedTotal = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            subtotalEl.textContent = formattedTotal;
+            totalEl.textContent = formattedTotal;
+        }
+
         let selectedPaymentMethod = null;
 
         function selectPayment(method) {
@@ -440,6 +493,12 @@
         }
 
         function finishCheckout() {
+            const totalText = document.getElementById('summary-total').textContent;
+            if (totalText === 'R$ 0,00' || totalText === 'R$ 0,00') { // Handle non-breaking space just in case
+                showNotification('Seu carrinho está vazio!', 'error');
+                return;
+            }
+
             if (!selectedPaymentMethod) {
                 showNotification('Selecione uma forma de pagamento', 'error');
                 return;
@@ -476,8 +535,8 @@
             }
             
             // Valor total - extrair do resumo do pedido
-            const valorText = document.querySelector('.text-2xl.font-bold.text-primary').textContent;
-            const valor = valorText.replace('R$', '').replace(',', '.').trim();
+            const valorText = document.getElementById('summary-total').textContent;
+            const valor = valorText.replace('R$', '').replace(/\./g, '').replace(',', '.').trim(); // Remove dots (thousands), replace comma with dot
             formData.append('valor_total', valor);
             
             // Simulando processamento no frontend (sem backend PHP)
@@ -486,13 +545,16 @@
             // Simular delay de rede
             setTimeout(() => {
                 showNotification('Pagamento processado com sucesso!', 'success');
+                
+                // Limpar carrinho
+                localStorage.removeItem('cart');
 
                 // Mostrar modal de sucesso
                 document.getElementById('successModal').classList.remove('hidden');
 
                 // Se for PIX, mostrar o QR Code gerado (mockup)
                 if (selectedPaymentMethod === 'pix') {
-                    const valorText = document.querySelector('.text-2xl.font-bold.text-primary').textContent.trim();
+                    const valorText = document.getElementById('summary-total').textContent.trim();
                     const pixModal = document.createElement('div');
                     pixModal.innerHTML = `
                         <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[10001]" onclick="this.remove()">

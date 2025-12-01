@@ -444,16 +444,16 @@
 
     <div class="cart-modal fixed inset-0 bg-black/50 glass-light z-[2000] hidden animate-fade-in" id="cartModal">
         <div
-            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl max-w-2xl w-[90%] max-h-[80vh] overflow-hidden shadow-2xl animate-slide-in">
+            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl max-w-2xl w-[90%] max-h-[80vh] overflow-hidden shadow-2xl animate-slide-in flex flex-col">
             <div
-                class="px-8 pt-8 pb-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
+                class="px-8 pt-8 pb-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white flex-shrink-0">
                 <div class="text-xl font-bold text-gray-800">🛒 Carrinho de Aluguel</div>
                 <button
                     class="close-cart bg-none border-none text-2xl cursor-pointer text-gray-400 p-2 rounded-lg transition-all duration-200 hover:text-gray-800 hover:bg-gray-100"
                     onclick="closeCart()">&times;</button>
             </div>
-            <div class="p-8 max-h-96 overflow-y-auto" id="cartItems"></div>
-            <div class="px-8 py-8 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <div class="p-8 overflow-y-auto flex-1" id="cartItems"></div>
+            <div class="px-8 py-8 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-white flex-shrink-0">
                 <div class="flex justify-between items-center mb-6 text-lg font-bold">
                     <span>Total:</span>
                     <span id="cartTotal">R$ 0,00</span>
