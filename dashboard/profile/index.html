@@ -146,7 +146,7 @@
 
   <!-- Supabase client (UMD) + shared config to allow client-side profile fetch/upsert -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-  <script src="../../shared/supabase-config.js"></script>
+  <script src="../../assets/js/shared/supabase-config.js"></script>
   <script>
     if (window.SUPABASE_CONFIG && typeof supabase !== 'undefined') {
       try {
@@ -161,7 +161,7 @@
 
   <script>
     // Ver o ID da sessão no console
-    // console.log('ID da sessão:', <?php echo json_encode($_SESSION['user_id']); ?>);
+    // console.log('ID da sessão:', null);
 
     // API Base URL - Detecta automaticamente se está em produção ou desenvolvimento
     const API_BASE_URL = window.location.hostname === 'localhost'

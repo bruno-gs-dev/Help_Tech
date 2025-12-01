@@ -595,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (user && loginLink && registerLink) {
         // Usuário logado: substituir Login por "Meu Painel" e esconder Registrar
         loginLink.innerHTML = '👤 Meu Painel';
-        loginLink.href = './dashboard_logged/index.html';
+        loginLink.href = './dashboard/index.html';
         registerLink.style.display = 'none';
 
         // Adicionar botão de sair

@@ -10,12 +10,14 @@
 
 <body>
   <div class="container">
-    <form class="form-box">
+    <form class="form-box" id="resetForm">
       <h2>Redefinir Senha</h2>
       <p>Informe seu e-mail para receber o link de redefinição.</p>
 
       <label for="email">Email</label>
       <input type="email" id="email" name="email" placeholder="Digite seu email" required />
+
+      <p id="message" style="margin-top: 10px; font-size: 0.9em;"></p>
 
       <button type="submit" class="btn">Enviar Link</button>
 
@@ -24,6 +26,60 @@
       </div>
     </form>
   </div>
+
+  <!-- Supabase JS (UMD) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+  <script src="../shared/supabase-config.js"></script>
+
+  <script>
+    // Initialize Supabase
+    let supabaseClient = null;
+    if (window.SUPABASE_CONFIG && window.supabase) {
+        supabaseClient = supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+    }
+
+    const form = document.getElementById('resetForm');
+    const messageEl = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const btn = form.querySelector('button');
+
+        btn.disabled = true;
+        btn.innerText = 'Enviando...';
+        messageEl.style.color = '#666';
+        messageEl.innerText = '';
+
+        if (!supabaseClient) {
+            messageEl.style.color = 'red';
+            messageEl.innerText = 'Erro de configuração: Supabase não inicializado.';
+            btn.disabled = false;
+            btn.innerText = 'Enviar Link';
+            return;
+        }
+
+        try {
+            const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/dashboard/profile/index.html?reset=true',
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            messageEl.style.color = 'green';
+            messageEl.innerText = 'Se o email estiver cadastrado, você receberá um link em instantes.';
+        } catch (err) {
+            console.error(err);
+            messageEl.style.color = 'red';
+            messageEl.innerText = 'Erro ao solicitar redefinição: ' + (err.message || 'Desconhecido');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Enviar Link';
+        }
+    });
+  </script>
 </body>
 
 </html>

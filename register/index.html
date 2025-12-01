@@ -619,7 +619,7 @@
 
     <!-- Supabase JS (UMD) and config for client-side registration -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-    <script src="../../shared/supabase-config.js"></script>
+    <script src="../../assets/js/shared/supabase-config.js"></script>
     <script>
         if (window.SUPABASE_CONFIG && window.supabase) {
             try {
@@ -773,7 +773,17 @@
                 }
             }
 
-            // Fallback: use existing server-side auth endpoint
+            // Fallback removed: we are moving to pure Supabase client-side logic
+            // or Vercel functions (which are JS).
+            // But since this block was the fallback if window.SUPABASE_CLIENT wasn't found,
+            // we should probably keep the fetch to API if Supabase client fails to load,
+            // BUT ensure it points to the JS api, not PHP.
+            // The existing code points to /api/auth (Node.js/Vercel) so it is actually correct for the new plan.
+            // However, to be extra safe and clean, let's just leave it as is, because /api/auth IS JS.
+            // But I will add a comment.
+
+            console.warn("Supabase client not found, falling back to /api/auth");
+
             fetch(`${API_BASE_URL}/auth`, {
                 method: 'POST',
                 headers: {
@@ -784,26 +794,16 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Registro bem-sucedido
-                        fecharModal(); // Fecha o modal de termos
-
-                        // Abre o modal de sucesso
+                        fecharModal();
                         document.getElementById('successModal').classList.add('show');
-
-                        // Redireciona após 2.5 segundos
                         setTimeout(function () {
                             window.location.href = '../login/index.html';
                         }, 2500);
                     } else {
-                        // Erro no registro
                         fecharModal();
-
-                        // Exibir erro geral
                         const mainError = document.getElementById('mainError');
                         mainError.innerText = data.message;
                         mainError.style.display = 'block';
-
-                        // Tentar mapear erros para campos específicos
                         const msg = data.message.toLowerCase();
 
                         if (msg.includes('primeiro nome')) mostrarErroCampo('first_name', 'Primeiro nome é obrigatório');
@@ -813,7 +813,6 @@
                         if (msg.includes('telefone')) mostrarErroCampo('phone', msg.includes('cadastrado') ? 'Telefone já cadastrado' : 'Telefone é obrigatório');
                         if (msg.includes('nascimento') || msg.includes('birthday')) mostrarErroCampo('birthday', 'Data de nascimento obrigatória');
 
-                        // Auto-hide error after 5 seconds
                         setTimeout(function () {
                             mainError.style.display = 'none';
                         }, 5000);
