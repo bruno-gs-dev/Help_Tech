@@ -28,12 +28,12 @@ function updateHeaderProfile() {
 
         // Determine Image URL
         // Prioritize profile.image, then metadata keys
-        const imageUrl = profile.image ||
-                         metadata.profile_pic ||
+        const imageUrl = (profile.image && profile.image.trim() !== '') ? profile.image :
+                         (metadata.profile_pic ||
                          metadata.image ||
                          metadata.avatar ||
                          metadata.picture ||
-                         null;
+                         null);
 
         // Determine Initial
         // Use full_name, username, or email

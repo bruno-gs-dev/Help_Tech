@@ -372,6 +372,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
     <script src="assets/js/shared/supabase-config.js"></script>
+    <script>
+        if (window.SUPABASE_CONFIG && window.supabase) {
+            window.SUPABASE_CLIENT = supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+        }
+    </script>
     <script src="assets/js/utils/responsive.js"></script>
     <script src="./main.js"></script>
 </body>

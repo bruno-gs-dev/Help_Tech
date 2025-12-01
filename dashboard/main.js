@@ -310,6 +310,11 @@
             });
         }
 
+        // Helper para gerar IDs válidos no DOM a partir de UUIDs/strings
+        function safeId(id) {
+            return String(id).replace(/[^a-zA-Z0-9_-]/g, '_');
+        }
+
         // Carrega produtos do servidor (/api/products), com fallback para /products.json e por fim para staticProducts
         async function loadProducts() {
             try {
@@ -370,6 +375,7 @@
                     if (product.status === 'available') {
                         updateProductPrice(product.id);
                         const minusBtn = document.querySelector(`[onclick="changeQuantity('${product.id}', -1)"]`);
+                        const minusBtn = document.querySelector(`[onclick="changeQuantity('${product.id}', -1)"]`);
                         if (minusBtn) minusBtn.disabled = true;
                     }
                 });
@@ -417,6 +423,7 @@
                 const badgeText = product.status === 'available' ? '✅ Disponível' : '❌ Indisponível';
                 const buttonDisabled = product.status === 'rented' ? 'disabled' : '';
                 const idSafe = safeId(product.id);
+                const idSafe = safeId(product.id);
 
                 const productCard = `
                     <div class="product-card bg-white rounded-2xl p-6 transition-all duration-300 cursor-pointer border border-gray-100 relative overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:border-transparent">
@@ -457,6 +464,7 @@
                                         ${product.status === 'rented' ? 'disabled' : ''}>+</button>
                             </div>
                         </div>
+                        <div class="flex justify-between items-center mb-4 px-3 py-3 bg-gray-50 rounded-lg text-sm" id="total-${idSafe}">
                         <div class="flex justify-between items-center mb-4 px-3 py-3 bg-gray-50 rounded-lg text-sm" id="total-${idSafe}">
                             <span class="font-medium text-gray-600">Total:</span>
                             <span class="total-amount font-bold text-primary text-base">R$ ${product.price},00</span>
